@@ -49,7 +49,7 @@ def test_ghostscript_backend_error_when_use_fallback(monkeypatch):
     monkeypatch.setattr(
         "camelot.backends.image_conversion.BACKENDS", backends, raising=True
     )
-    backend = ImageConversionBackend()
+    backend = ImageConversionBackend(backend="poppler")
 
     message = "Image conversion failed with image conversion backend 'ghostscript'"
     with pytest.raises(ValueError, match=message):
