@@ -1,23 +1,21 @@
-# -*- coding: utf-8 -*-
-
 import warnings
+from pathlib import Path
+from typing import Union
+
+from pypdf._utils import StrByteType
 
 from .handlers import PDFHandler
-from .utils import (
-    InvalidArguments,
-    validate_input,
-    remove_extra,
-)
+from .utils import remove_extra
+from .utils import validate_input
 
 
 def read_pdf(
-    filepath=None,
+    filepath: Union[StrByteType, Path],
     pages="1",
     password=None,
     flavor="lattice",
     suppress_stdout=False,
-    layout_kwargs={},
-    file_bytes=None,
+    layout_kwargs=None,
     **kwargs
 ):
     """Read PDF and return extracted tables.
@@ -27,8 +25,8 @@ def read_pdf(
 
     Parameters
     ----------
-    filepath : str | pathlib.Path, optional (default: None)
-        Filepath or URL of the PDF file. Required if file_bytes is not given
+    filepath : str, Path, IO
+        Filepath or URL of the PDF file.
     pages : str, optional (default: '1')
         Comma-separated page numbers.
         Example: '1,3,4' or '1,4-end' or 'all'.
@@ -42,7 +40,8 @@ def read_pdf(
     file_bytes : io.IOBase, optional (default: None)
         A file-like stream. Required if filepath is not given
     layout_kwargs : dict, optional (default: {})
-        A dict of `pdfminer.layout.LAParams <https://github.com/euske/pdfminer/blob/master/pdfminer/layout.py#L33>`_ kwargs.
+        A dict of `pdfminer.layout.LAParams
+        <https://github.com/euske/pdfminer/blob/master/pdfminer/layout.py#L33>`_ kwargs.
     table_areas : list, optional (default: None)
         List of table area strings of the form x1,y1,x2,y2
         where (x1, y1) -> left-top and (x2, y2) -> right-bottom
@@ -87,16 +86,19 @@ def read_pdf(
         Size of a pixel neighborhood that is used to calculate a
         threshold value for the pixel: 3, 5, 7, and so on.
 
-        For more information, refer `OpenCV's adaptiveThreshold <https://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#adaptivethreshold>`_.
+        For more information, refer `OpenCV's adaptiveThreshold
+        <https://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#adaptivethreshold>`_.
     threshold_constant* : int, optional (default: -2)
         Constant subtracted from the mean or weighted mean.
         Normally, it is positive but may be zero or negative as well.
 
-        For more information, refer `OpenCV's adaptiveThreshold <https://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#adaptivethreshold>`_.
+        For more information, refer `OpenCV's adaptiveThreshold
+        <https://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#adaptivethreshold>`_.
     iterations* : int, optional (default: 0)
         Number of times for erosion/dilation is applied.
 
-        For more information, refer `OpenCV's dilate <https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#dilate>`_.
+        For more information, refer `OpenCV's dilate
+        <https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#dilate>`_.
     resolution* : int, optional (default: 300)
         Resolution used for PDF to PNG conversion.
 
@@ -105,6 +107,8 @@ def read_pdf(
     tables : camelot.core.TableList
 
     """
+    if layout_kwargs is None:
+        layout_kwargs = {}
     if flavor not in ["lattice", "stream"]:
         raise NotImplementedError(
             "Unknown flavor specified." " Use either 'lattice' or 'stream'"
