@@ -24,7 +24,6 @@ else:
     from typing_extensions import TypedDict, Unpack
 
 from .backends import ImageConversionBackend
-from .utils import build_file_path_in_temp_dir
 from .utils import get_index_closest_point
 from .utils import get_textline_coords
 
@@ -614,9 +613,10 @@ class Table:
         """Compute pdf image and cache it."""
         if self._image is None:
             if self._image_path is None:
-                self._image_path = build_file_path_in_temp_dir(
-                    os.path.basename(self.filename), ".png"
-                )
+                # self._image_path = build_file_path_in_temp_dir(  # TODO
+                #     os.path.basename(self.filename), ".png"
+                # )
+                self._image_path = self.filename + ".png"
                 backend = ImageConversionBackend(use_fallback=True)
                 backend.convert(self.filename, self._image_path)
             self._image = cv2.imread(self._image_path)
