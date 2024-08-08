@@ -75,6 +75,11 @@ jobs:
           sudo apt update
           sudo apt install ghostscript
 
+      - name: Install ghostscript (macos-latest)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install ghostscript
+
       - name: Compute pre-commit cache key
         if: matrix.session == 'pre-commit'
         id: pre-commit-cache
