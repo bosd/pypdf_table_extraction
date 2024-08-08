@@ -78,7 +78,7 @@ jobs:
       - name: Install ghostscript (macos-latest)
         if: matrix.os == 'macos-latest'
         run: |
-          brew install ghostscript
+          brew install ghostscript tcl-tk
 
       - name: Compute pre-commit cache key
         if: matrix.session == 'pre-commit'
