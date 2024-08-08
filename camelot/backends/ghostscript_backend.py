@@ -2,9 +2,11 @@ import ctypes
 import sys
 from ctypes.util import find_library
 
+import distutils.spawn
 
 def installed_posix():
-    library = find_library("gs")
+    # library = find_library("gs")
+    library = distutils.spawn.find_executable("gs")
     return library is not None
 
 
