@@ -22,7 +22,7 @@ Changelog = "https://github.com/camelot-dev/camelot/blob/master/HISTORY.md"
 python = "^3.8"
 click = ">=8.0.1"
 chardet = "^5.1.0"
-numpy = ">=1.24.4"
+numpy = "^1.24.4"
 openpyxl = "^3.1.0"
 pandas = "^1.5.3"
 pdfminer-six = "^20221105"
@@ -62,7 +62,7 @@ opencv-python = "^4.7.0.68"
 
 
 [tool.poetry.group.plot.dependencies]
-matplotlib = "^3.6.3"
+matplotlib = "^3.7.5"
 
 [tool.coverage.paths]
 source = ["camelot", "*/site-packages"]
