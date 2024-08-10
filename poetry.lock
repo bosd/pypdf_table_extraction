@@ -526,7 +526,9 @@ files = [
 ]
 
 [package.dependencies]
-numpy = {version = ">=1.16,<2.0", markers = "python_version <= \"3.11\""}
+numpy = {version = ">=1.16,<1.25.0", markers = "python_version <= \"3.11\""}
+numpy = {version = ">=1.26.0,<3", markers = "python_version >= \"3.12\""}
+
 
 [package.extras]
 bokeh = ["bokeh", "selenium"]
