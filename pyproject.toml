@@ -69,7 +69,11 @@ opencv-python = "^4.7.0.68"
 
 
 [tool.poetry.group.plot.dependencies]
-matplotlib = "^3.6.3"
+matplotlib = [
+    {version = "^3.7.5", python = ">=3.8,<3.12"},
+    {version = "^3.8.0", python = ">=3.12"}
+]
+
 
 [tool.coverage.paths]
 source = ["camelot", "*/site-packages"]
