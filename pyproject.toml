@@ -32,7 +32,7 @@ pandas = [
     {version = "^2.0.0", python = ">=3.12"}
 ]
 
-pdfminer-six = "^20221105"
+pdfminer-six = "^20240706"
 pypdf = "^3.4.0"
 tabulate = "^0.9.0"
 
