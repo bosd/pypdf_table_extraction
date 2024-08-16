@@ -128,18 +128,17 @@ todo_include_todos = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "alabaster"
+html_theme = "sphinx_book_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "show_powered_by": False,
-    "github_user": "py-pdf",
-    "github_repo": "pypdf_table_extraction",
-    "github_banner": True,
-    "show_related": False,
-    "note_bg": "#FFF59C",
+    "repository_url": "https://github.com/py-pdf/pypdf_table_extraction",
+    "repository_branch": "main",
+    "path_to_docs": "/docs",
+    "use_repository_button": True,
+    # "launch_buttons": "dict to notebooks to launch",
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -186,23 +185,23 @@ html_static_path = ["_static"]
 html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-html_sidebars = {
-    "index": [
-        "sidebarintro.html",
-        "relations.html",
-        "sourcelink.html",
-        "searchbox.html",
-        "hacks.html",
-    ],
-    "**": [
-        "sidebarlogo.html",
-        "localtoc.html",
-        "relations.html",
-        "sourcelink.html",
-        "searchbox.html",
-        "hacks.html",
-    ],
-}
+#html_sidebars = {
+#    "index": [
+#        "sidebarintro.html",
+#        "relations.html",
+#        "sourcelink.html",
+#        "searchbox.html",
+#        "hacks.html",
+#    ],
+#    "**": [
+#        "sidebarlogo.html",
+#        "localtoc.html",
+#        "relations.html",
+#        "sourcelink.html",
+#        "searchbox.html",
+#        "hacks.html",
+#    ],
+#}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
