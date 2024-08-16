@@ -37,7 +37,6 @@ sys.path.insert(0, os.path.abspath("_themes"))
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
-    "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     "sphinx_click",
@@ -79,7 +78,7 @@ release = camelot.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = en
+language = "en"
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -362,9 +361,3 @@ texinfo_documents = [
 #
 # texinfo_no_detailmenu = False
 
-
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {
-    "https://docs.python.org/2": None,
-    "http://pandas.pydata.org/pandas-docs/stable": None,
-}
