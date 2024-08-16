@@ -41,6 +41,8 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_click",
     "myst_parser",
+    "sphinx_copybutton",
+    "sphinx-prompt",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -62,7 +64,7 @@ master_doc = "index"
 # General information about the project.
 project = "pypdf_table_extraction"
 copyright = "2024, pypdf_table_extraction Developers"
-author = "Vinayak Mehta"
+author = "pypdf_table_extraction Developers"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
