@@ -1,6 +1,4 @@
 #
-# camelot documentation build configuration file, created by
-# sphinx-quickstart on Tue Jul 19 13:44:18 2016.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -32,7 +30,6 @@ sys.path.insert(0, os.path.abspath("_themes"))
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
-# needs_sphinx = '1.0'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -64,8 +61,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = "pypdf-table-extraction"
-copyright = "2024, pypdf-table-extraction Developers"
+project = "pypdf_table_extraction"
+copyright = "2024, pypdf_table_extraction Developers"
 author = "Vinayak Mehta"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -82,7 +79,7 @@ release = camelot.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = en
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -140,7 +137,7 @@ html_theme = "alabaster"
 html_theme_options = {
     "show_powered_by": False,
     "github_user": "py-pdf",
-    "github_repo": "pypdf-table-extraction",
+    "github_repo": "pypdf_table_extraction",
     "github_banner": True,
     "show_related": False,
     "note_bg": "#FFF59C",
@@ -161,7 +158,7 @@ html_theme_options = {
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 #
-# html_logo = None
+html_logo = "_static/camelot.png"
 
 # The name of an image file (relative to this directory) to use as a favicon of
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -262,7 +259,7 @@ html_show_copyright = True
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "pypdf-table-extraction-doc"
+htmlhelp_basename = "pypdf_table_extraction-doc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -325,7 +322,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "pypdf-table-extraction", "pypdf-table-extraction Documentation", [author], 1)]
+man_pages = [(master_doc, "pypdf_table_extraction", "pypdf_table_extraction Documentation", [author], 1)]
 
 # If true, show URL addresses after external links.
 #
@@ -340,10 +337,10 @@ man_pages = [(master_doc, "pypdf-table-extraction", "pypdf-table-extraction Docu
 texinfo_documents = [
     (
         master_doc,
-        "pypdf-table-extraction",
-        "pypdf-table-extraction Documentation",
+        "pypdf_table_extraction",
+        "pypdf_table_extraction Documentation",
         author,
-        "pypdf-table-extraction",
+        "pypdf_table_extraction",
         "PDF Table Extraction for Humans.",
         "Miscellaneous",
     ),
