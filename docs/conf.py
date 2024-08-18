@@ -22,7 +22,7 @@ import camelot
 # sys.path.insert(0, os.path.abspath('..'))
 
 # Insert pypdf_table_extraction's path into the system.
-sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, os.path.abspath("../camelot"))
 sys.path.insert(0, os.path.abspath("_themes"))
 
 
