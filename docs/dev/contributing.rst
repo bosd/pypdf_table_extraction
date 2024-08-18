@@ -55,15 +55,18 @@ The preferred workflow for contributing to Camelot is to fork the `project repos
 
 1. Fork the project repository. Click on the ‘Fork’ button near the top of the page. This creates a copy of the code under your account on the GitHub.
 
-2. Clone your fork of Camelot from your GitHub account:: console
+2. Clone your fork of Camelot from your GitHub account
+.. code-block::bash
 
-    $ git clone https://www.github.com/[username]/pypdf-table-extraction
+  $ git clone https://www.github.com/pypdf/pypdf-table-extraction
 
-3. Create a branch to hold your changes:: console
 
-    $ git checkout -b my-feature
+3. Create a branch to hold your changes
+.. prompt:: bash
 
-Always branch out from ``master`` to work on your contribution. It's good practice to never work on the ``master`` branch!
+    git checkout -b my-feature
+
+Always branch out from ``main`` to work on your contribution. It's good practice to never work on the ``main`` branch!
 
 .. note:: ``git stash`` is a great way to save the work that you haven't committed yet, to move between branches.
 

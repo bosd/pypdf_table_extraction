@@ -1,7 +1,7 @@
 .. _install:
 
-Installation of pypdf-table-extraction Camelot):
-=======================
+Installation
+=============
 
 This part of the documentation covers the steps to install pypdf-table-extraction.
 

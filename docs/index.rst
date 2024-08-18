@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 pypdf-table-extraction (Camelot): PDF Table Extraction for Humans
-========================================
+=================================================================
 
 Release v\ |version|. (:ref:`Installation <install>`)
 
