@@ -10,15 +10,23 @@ OS-specific instructions
 
 Ubuntu
 ^^^^^^
-:: console
+.. code:: console
 
     $ apt install ghostscript python3-tk
 
 MacOS
 ^^^^^
-:: console
+
+.. code:: console
 
     $ brew install ghostscript tcl-tk
+
+.. note:: 
+  You might encounter the problem that the ghostscript module cannot be found. This can be fixed with the following commands.
+
+  ``mkdir -p ~/lib``
+
+  ``ln -s "$(brew --prefix gs)/lib/libgs.dylib" ~/lib`` 
 
 Windows
 ^^^^^^^
