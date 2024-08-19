@@ -8,11 +8,11 @@ If you're reading this, you're probably looking to contributing to pypdf-table-e
 
 This document will help you get started with contributing documentation, code, testing and filing issues.
 
+-  This Documentation
 -  `Source Code <https://github.com/py-pdf/pypdf_table_extraction>`__
--  `Documentation <https://camelot-py.readthedocs.io/>`__
 -  `Issue
    Tracker <https://github.com/py-pdf/pypdf_table_extraction/issues>`__
--  :doc:`code of conduct <codeofconduct>`.
+-  :doc:`Code Of Conduct <codeofconduct>`.
 
 Code Of Conduct
 ---------------
