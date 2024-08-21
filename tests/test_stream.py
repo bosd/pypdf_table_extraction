@@ -95,7 +95,7 @@ def test_stream_strip_text(testdir):
     df = pd.DataFrame(data_stream_strip_text)
 
     filename = os.path.join(testdir, "detect_vertical_false.pdf")
-    tables = camelot.read_pdf(filename, flavor="stream", strip_text=[" ", ","])
+    tables = camelot.read_pdf(filename, flavor="stream", strip_text=["1111", "2222"])
     import pdb
 
     pdb.set_trace()
