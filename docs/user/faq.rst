@@ -58,7 +58,7 @@ For more details, check out this code snippet from `@anakin87 <https://github.co
 How can I supply my own image conversion backend to Lattice?
 ------------------------------------------------------------
 
-When using the :ref:`Lattice <lattice>` flavor, you can supply your own :ref:`image conversion backend <image-conversion-backend>` by creating a class with a ``convert`` method as follows::
+When using the :ref:`Lattice <lattice>` flavor, you can supply your own :ref:`image conversion backend <image-conversion-backend>` by creating a class with a ``convert`` method as follows:
 
 .. code-block:: python
 
