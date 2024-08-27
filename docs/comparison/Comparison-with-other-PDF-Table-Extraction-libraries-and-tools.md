@@ -2,7 +2,7 @@ This page of the wiki aims to compare pypdf_table_extraction's output (qualitati
 
 We believe that pypdf_table_extraction works better than other open-source alternatives out there, we try to avoid bias though, and be fair and accurate here, by listing down advantages other tools might have over pypdf_table_extraction. (While also listing down steps with which pypdf_table_extraction makes up for them using one or more of the configuration parameters.)
 
-We would like your help to keep this document up-to-date. If notice any inconsistency, please let us know by [opening an issue](https://github.com/socialcopsdev/camelot/issues/new?title=Inconsistency+on+comparison+page).
+We would like your help to keep this document up-to-date. If notice any inconsistency, please let us know by [opening an issue](https://github.com/py-pdf/pypdf_table_extraction/issues/new?title=Inconsistency+on+comparison+page).
 
 **Table of contents**
 
@@ -17,7 +17,6 @@ The naming for parsing methods inside pypdf_table_extraction (i.e. Lattice and S
 
 We took 10 PDFs of each type (lines, for Lattice and whitespaces between tables cells, for Stream) and passed them through Tabula's web interface and pypdf_table_extraction's command-line interface. The CSV outputs were pushed to this repo as is. We found that pypdf_table_extraction works better than Tabula in all Lattice cases. Tabula does better table detection for Stream cases, but it still fails to give good parsing output, which pypdf_table_extraction solves for with its configuration parameters.
 
-**Note: We have better table detection for Stream cases in the works.** [#102](https://github.com/socialcopsdev/camelot/issues/102)
 
 We put a ✔️ in the "Table detected correctly?" column if the table was detected accurately and ❌ if it was not (providing an image of the detected table in both cases). The reasoning behind which output is better is provided in the "Comments" column.
 
