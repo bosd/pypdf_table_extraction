@@ -118,6 +118,7 @@ jobs:
           name: coverage-data-${{ matrix.session }}-${{ matrix.python }}-${{ matrix.os }}
           path: .coverage.*
           if-no-files-found: ignore
+          include-hidden-files: true
 
       - name: Upload documentation
         if: matrix.session == 'docs-build'
@@ -157,6 +158,7 @@ jobs:
       - name: Download coverage data
         uses: actions/download-artifact@v4
         with:
+          path: .coverage.*
           pattern: coverage-data-*
           merge-multiple: true
 
