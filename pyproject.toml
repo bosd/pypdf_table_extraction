@@ -84,7 +84,7 @@ matplotlib = [
 
 
 [tool.coverage.paths]
-source = ["camelot", "*/site-packages", "*\\site-packages"]
+source = ["camelot", "*/site-packages", "*\\camelot"]
 tests = ["tests", "*/tests"]
 
 [tool.coverage.run]
