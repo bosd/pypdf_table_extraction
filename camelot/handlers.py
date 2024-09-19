@@ -1,6 +1,9 @@
 import multiprocessing as mp
 import os
+import shutil
 import sys
+import tempfile
+import weakref
 from pathlib import Path
 from typing import Union
 
@@ -11,7 +14,6 @@ from pypdf._utils import StrByteType
 from .core import TableList
 from .parsers import Lattice
 from .parsers import Stream
-from .utils import TemporaryDirectory
 from .utils import download_url
 from .utils import get_page_layout
 from .utils import get_rotation
@@ -37,6 +39,8 @@ class PDFHandler:
     """
 
     def __init__(self, filepath: Union[StrByteType, Path], pages="1", password=None):
+        self.tempdir = tempfile.mkdtemp()
+        self._finalizer = weakref.finalize(self, shutil.rmtree, self.tempdir)
         if is_url(filepath):
             filepath = download_url(filepath)
         self.filepath: Union[StrByteType, Path] = filepath
@@ -57,15 +61,13 @@ class PDFHandler:
 
         Parameters
         ----------
-        filepath : str
-            Filepath or URL of the PDF file.
         pages : str, optional (default: '1')
             Comma-separated page numbers.
             Example: '1,3,4' or '1,4-end' or 'all'.
 
         Returns
         -------
-        P : list
+        result : list[int]
             List of int page numbers.
 
         """
@@ -96,24 +98,33 @@ class PDFHandler:
             result.extend(range(p["start"], p["end"] + 1))
         return sorted(set(result))
 
-    def _save_page(self, filepath: Union[StrByteType, Path], page, temp):
+    def _get_temp_path(self, page, rotated=False):
+        """Generate page path with temp directory.
+
+        Parameters
+        ----------
+        page : int
+            Page number.
+        rotated: bool (default: False)
+            Switch to generate temp file name.
+        """
+        if rotated is False:
+            return os.path.join(self.tempdir, f"page-{page}.pdf")
+        else:
+            return os.path.join(self.tempdir, f"p-{page}_rotated.pdf")
+
+    def _save_page(self, page):
         """Saves specified page from PDF into a temporary directory.
 
         Parameters
         ----------
-        filepath : str
-            Filepath or URL of the PDF file.
         page : int
             Page number.
-        temp : str
-            Tmp directory.
-
         """
-        infile = PdfReader(filepath, strict=False)
+        infile = PdfReader(self.filepath, strict=False)
         if infile.is_encrypted:
             infile.decrypt(self.password)
-        fpath = os.path.join(temp, f"page-{page}.pdf")
-        froot, fext = os.path.splitext(fpath)
+        fpath = self._get_temp_path(page)
         p = infile.pages[page - 1]
         outfile = PdfWriter()
         outfile.add_page(p)
@@ -126,7 +137,7 @@ class PDFHandler:
         vertical_text = get_text_objects(layout, ltype="vertical_text")
         rotation = get_rotation(chars, horizontal_text, vertical_text)
         if rotation != "":
-            fpath_new = "".join([froot.replace("page", "p"), "_rotated", fext])
+            fpath_new = self._get_temp_path(page, rotated=True)
             os.rename(fpath, fpath_new)
             instream = open(fpath_new, "rb")
             infile = PdfReader(instream, strict=False)
@@ -180,27 +191,25 @@ class PDFHandler:
 
         tables = []
         parser = Lattice(**kwargs) if flavor == "lattice" else Stream(**kwargs)
-        with TemporaryDirectory() as tempdir:
-            cpu_count = mp.cpu_count()
-            # Using multiprocessing only when cpu_count > 1 to prevent a stallness issue
-            # when cpu_count is 1
-            if parallel and len(self.pages) > 1 and cpu_count > 1:
-                with mp.get_context("spawn").Pool(processes=cpu_count) as pool:
-                    jobs = []
-                    for p in self.pages:
-                        j = pool.apply_async(
-                            self._parse_page,(p, tempdir, parser, suppress_stdout, layout_kwargs)
-                        )
-                        jobs.append(j)
-
-                    for j in jobs:
-                        t = j.get()
-                        tables.extend(t)
-            else:
+        cpu_count = mp.cpu_count()
+        # Using multiprocessing only when cpu_count > 1 to prevent a stallness issue
+        # when cpu_count is 1
+        if parallel and len(self.pages) > 1 and cpu_count > 1:
+            with mp.get_context("spawn").Pool(processes=cpu_count) as pool:
+                jobs = []
                 for p in self.pages:
-                    t = self._parse_page(p, tempdir, parser, suppress_stdout, layout_kwargs)
-                    tables.extend(t)
+                    j = pool.apply_async(
+                        self._parse_page,(p, self._get_temp_path(p), parser, suppress_stdout, layout_kwargs)
+                    )
+                    jobs.append(j)
 
+                for j in jobs:
+                    t = j.get()
+                    tables.extend(t)
+        else:
+            for p in self.pages:
+                t = self._parse_page(p, self._get_temp_path(p), parser, suppress_stdout, layout_kwargs)
+                tables.extend(t)
         return TableList(sorted(tables))
 
     def _parse_page(
@@ -224,7 +233,7 @@ class PDFHandler:
         -------
         tables : camelot.core.TableList
             List of tables found in PDF.
-        
+
         """
         self._save_page(self.filepath, page, tempdir)
         page_path = os.path.join(tempdir, f"page-{page}.pdf")
