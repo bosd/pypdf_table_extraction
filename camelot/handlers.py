@@ -9,7 +9,9 @@ from pypdf import PdfWriter
 from pypdf._utils import StrByteType
 
 from .core import TableList
+from .parsers import Hybrid
 from .parsers import Lattice
+from .parsers import Network
 from .parsers import Stream
 from .utils import TemporaryDirectory
 from .utils import build_file_path_in_temp_dir
@@ -34,10 +36,14 @@ class PDFHandler:
         Example: '1,3,4' or '1,4-end' or 'all'.
     password : str, optional (default: None)
         Password for decryption.
-
+    debug : bool, optional (default: False)
+        Whether the parser should store debug information during parsing.
     """
 
-    def __init__(self, filepath: Union[StrByteType, Path], pages="1", password=None):
+    def __init__(
+        self, filepath: Union[StrByteType, Path], pages="1", password=None, debug=False
+    ):
+        self.debug = debug
         if is_url(filepath):
             filepath = download_url(filepath)
         self.filepath: Union[StrByteType, Path] = filepath
@@ -168,7 +174,7 @@ class PDFHandler:
         Parameters
         ----------
         flavor : str (default: 'lattice')
-            The parsing method to use ('lattice' or 'stream').
+            The parsing method to use.
             Lattice is used by default.
         suppress_stdout : bool (default: False)
             Suppress logs and warnings.
@@ -225,8 +231,8 @@ class PDFHandler:
         ----------
         page : str
             Page number to parse
-        parser : Lattice or Stream
-            The parser to use (Lattice or Stream).
+        parser : Lattice, Stream, Network or Hybrid
+            The parser to use.
         suppress_stdout : bool
             Suppress logs and warnings.
         layout_kwargs : dict, optional (default: {})
