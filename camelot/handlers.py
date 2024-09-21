@@ -11,8 +11,8 @@ from pypdf._utils import StrByteType
 from .core import TableList
 from .parsers import Lattice
 from .parsers import Stream
-from .utils import build_file_path_in_temp_dir
 from .utils import TemporaryDirectory
+from .utils import build_file_path_in_temp_dir
 from .utils import download_url
 from .utils import get_page_layout
 from .utils import get_rotation
@@ -160,7 +160,7 @@ class PDFHandler:
         suppress_stdout=False,
         parallel=False,
         layout_kwargs=None,
-        **kwargs
+        **kwargs,
     ):
         """Extracts tables by calling parser.get_tables on all single
         page PDFs.
@@ -200,7 +200,8 @@ class PDFHandler:
                     jobs = []
                     for p in self.pages:
                         j = pool.apply_async(
-                            self._parse_page,(p, tempdir, parser, suppress_stdout, layout_kwargs)
+                            self._parse_page,
+                            (p, tempdir, parser, suppress_stdout, layout_kwargs),
                         )
                         jobs.append(j)
 
@@ -209,14 +210,14 @@ class PDFHandler:
                         tables.extend(t)
             else:
                 for p in self.pages:
-                    t = self._parse_page(p, tempdir, parser, suppress_stdout, layout_kwargs)
+                    t = self._parse_page(
+                        p, tempdir, parser, suppress_stdout, layout_kwargs
+                    )
                     tables.extend(t)
 
         return TableList(sorted(tables))
 
-    def _parse_page(
-        self, page, tempdir, parser, suppress_stdout, layout_kwargs
-    ):
+    def _parse_page(self, page, tempdir, parser, suppress_stdout, layout_kwargs):
         """Extracts tables by calling parser.get_tables on a single
         page PDF.
 
@@ -235,13 +236,14 @@ class PDFHandler:
         -------
         tables : camelot.core.TableList
             List of tables found in PDF.
-        
+
         """
         self._save_page(self.filepath, page, tempdir)
         page_path = os.path.join(tempdir, f"page-{page}.pdf")
         layout, dimensions = get_page_layout(page_path, **layout_kwargs)
-        parser._generate_layout(page_path, layout, dimensions,
-                            page, layout_kwargs=layout_kwargs)
+        parser._generate_layout(
+            page_path, layout, dimensions, page, layout_kwargs=layout_kwargs
+        )
         tables = parser.extract_tables(
             page_path, suppress_stdout=suppress_stdout, layout_kwargs=layout_kwargs
         )
