@@ -498,7 +498,8 @@ def network(c, *args, **kwargs):
             raise click.UsageError("Please specify output file format using --format")
 
     tables = read_pdf(
-        filepath, pages=pages, flavor="network", suppress_stdout=quiet, **kwargs
+        filepath, pages=pages, flavor="network",
+        suppress_stdout=quiet, **kwargs
     )
     click.echo(f"Found {tables.n} tables")
     if plot_type is not None:
