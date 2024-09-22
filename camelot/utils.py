@@ -441,7 +441,8 @@ def textlines_overlapping_bbox(bbox, textlines):
 
 
 def text_in_bbox(bbox, text):
-    """Returns all text objects present inside a bounding box.
+    """Returns all text objects which lie at least 80% inside a bounding box
+    across both dimensions.
 
     Parameters
     ----------
@@ -481,6 +482,69 @@ def text_in_bbox(bbox, text):
     unique_boxes = list(rest)
 
     return unique_boxes
+
+
+def text_in_bbox_per_axis(bbox, horizontal_text, vertical_text):
+    """Returns all text objects present inside a bounding box, split between
+    horizontal and vertical text.
+    Parameters
+    ----------
+    bbox : tuple
+        Tuple (x1, y1, x2, y2) representing a bounding box where
+        (x1, y1) -> lb and (x2, y2) -> rt in the PDF coordinate
+        space.
+    horizontal_text : List of PDFMiner text objects.
+    vertical_text : List of PDFMiner text objects.
+    Returns
+    -------
+    t_bbox : dict
+        Dict of lists of PDFMiner text objects that lie inside table, with one
+        key each for "horizontal" and "vertical"
+    """
+    t_bbox = {}
+    t_bbox["horizontal"] = text_in_bbox(bbox, horizontal_text)
+    t_bbox["vertical"] = text_in_bbox(bbox, vertical_text)
+    t_bbox["horizontal"].sort(key=lambda x: (-x.y0, x.x0))
+    t_bbox["vertical"].sort(key=lambda x: (x.x0, -x.y0))
+    return t_bbox
+
+
+def expand_bbox_with_textline(bbox, textline):
+    """Expand (if needed) a bbox so that it fits the parameter textline.
+    """
+    return (
+        min(bbox[0], textline.x0),
+        min(bbox[1], textline.y0),
+        max(bbox[2], textline.x1),
+        max(bbox[3], textline.y1)
+    )
+
+
+def bbox_from_textlines(textlines):
+    """Returns the smallest bbox containing all the text objects passed as
+    a parameters.
+    Parameters
+    ----------
+    textlines : List of PDFMiner text objects.
+    Returns
+    -------
+    bbox : tuple
+        Tuple (x1, y1, x2, y2) representing a bounding box where
+        (x1, y1) -> lb and (x2, y2) -> rt in the PDF coordinate
+        space.
+    """
+    if len(textlines) == 0:
+        return None
+    bbox = (
+        textlines[0].x0,
+        textlines[0].y0,
+        textlines[0].x1,
+        textlines[0].y1
+    )
+
+    for tl in textlines[1:]:
+        bbox = expand_bbox_with_textline(bbox, tl)
+    return bbox
 
 
 def bbox_intersection_area(ba, bb) -> float:
