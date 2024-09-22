@@ -441,7 +441,8 @@ def textlines_overlapping_bbox(bbox, textlines):
 
 
 def text_in_bbox(bbox, text):
-    """Returns all text objects present inside a bounding box.
+    """Returns all text objects which lie at least 80% inside a bounding box
+    across both dimensions.
 
     Parameters
     ----------
@@ -481,6 +482,188 @@ def text_in_bbox(bbox, text):
     unique_boxes = list(rest)
 
     return unique_boxes
+
+
+def text_in_bbox_per_axis(bbox, horizontal_text, vertical_text):
+    """Returns all text objects present inside a bounding box, split between
+    horizontal and vertical text.
+    Parameters
+    ----------
+    bbox : tuple
+        Tuple (x1, y1, x2, y2) representing a bounding box where
+        (x1, y1) -> lb and (x2, y2) -> rt in the PDF coordinate
+        space.
+    horizontal_text : List of PDFMiner text objects.
+    vertical_text : List of PDFMiner text objects.
+    Returns
+    -------
+    t_bbox : dict
+        Dict of lists of PDFMiner text objects that lie inside table, with one
+        key each for "horizontal" and "vertical"
+    """
+    t_bbox = {}
+    t_bbox["horizontal"] = text_in_bbox(bbox, horizontal_text)
+    t_bbox["vertical"] = text_in_bbox(bbox, vertical_text)
+
+    t_bbox["horizontal"].sort(key=lambda x: (-x.y0, x.x0))
+    t_bbox["vertical"].sort(key=lambda x: (x.x0, -x.y0))
+    return t_bbox
+
+
+def expand_bbox_with_textline(bbox, textline):
+    """Expand (if needed) a bbox so that it fits the parameter textline.
+    """
+    return (
+        min(bbox[0], textline.x0),
+        min(bbox[1], textline.y0),
+        max(bbox[2], textline.x1),
+        max(bbox[3], textline.y1)
+    )
+
+
+def bbox_from_textlines(textlines):
+    """Returns the smallest bbox containing all the text objects passed as
+    a parameters.
+    Parameters
+    ----------
+    textlines : List of PDFMiner text objects.
+    Returns
+    -------
+    bbox : tuple
+        Tuple (x1, y1, x2, y2) representing a bounding box where
+        (x1, y1) -> lb and (x2, y2) -> rt in the PDF coordinate
+        space.
+    """
+    if len(textlines) == 0:
+        return None
+    bbox = (
+        textlines[0].x0,
+        textlines[0].y0,
+        textlines[0].x1,
+        textlines[0].y1
+    )
+
+    for tl in textlines[1:]:
+        bbox = expand_bbox_with_textline(bbox, tl)
+    return bbox
+
+
+def find_columns_boundaries(tls, min_gap=1.0):
+    """Make a list of disjunct cols boundaries for a list of text objects
+    Parameters
+    ----------
+    tls : list of PDFMiner text object.
+    min_gap : minimum distance between columns. Any elements closer than
+        this threshold are merged together.  This is to prevent spaces between
+        words to be misinterpreted as boundaries.
+    Returns
+    -------
+    boundaries : list
+        List x-coordinates for cols.
+         [(1st col left, 1st col right), (2nd col left, 2nd col right), ...]
+    """
+    cols_bounds = []
+    tls.sort(key=lambda tl: tl.x0)
+    for tl in tls:
+        if (not cols_bounds) or cols_bounds[-1][1] + min_gap < tl.x0:
+            cols_bounds.append([tl.x0, tl.x1])
+        else:
+            cols_bounds[-1][1] = max(cols_bounds[-1][1], tl.x1)
+    return cols_bounds
+
+
+def find_rows_boundaries(tls, min_gap=1.0):
+    """Make a list of disjunct rows boundaries for a list of text objects
+    Parameters
+    ----------
+    tls : list of PDFMiner text object.
+    min_gap : minimum distance between rows. Any elements closer than
+        this threshold are merged together.
+    Returns
+    -------
+    boundaries : list
+        List y-coordinates for rows.
+         [(1st row bottom, 1st row top), (2nd row bottom, 2nd row top), ...]
+    """
+    rows_bounds = []
+    tls.sort(key=lambda tl: tl.y0)
+    for tl in tls:
+        if (not rows_bounds) or rows_bounds[-1][1] + min_gap < tl.y0:
+            rows_bounds.append([tl.y0, tl.y1])
+        else:
+            rows_bounds[-1][1] = max(rows_bounds[-1][1], tl.y1)
+    return rows_bounds
+
+
+def boundaries_to_split_lines(boundaries):
+    """Find split lines given a list of boundaries between rows or cols.
+    Boundaries:     [ a ]         [b]     [   c   ]  [d]
+    Splits:         |        |         |            |  |
+    Parameters
+    ----------
+    boundaries : list
+        List of tuples of x- (for columns) or y- (for rows) coord boundaries.
+        These are the (left, right most) or (bottom, top most) coordinates.
+    Returns
+    -------
+    anchors : list
+        List of coordinates representing the split points, each half way
+        between boundaries
+    """
+    # From the row boundaries, identify splits by getting the mid points
+    # between the boundaries.
+    anchors = list(map(
+        lambda idx: (boundaries[idx - 1][1] + boundaries[idx][0]) / 2.0,
+        range(1, len(boundaries))
+    ))
+    anchors.insert(0, boundaries[0][0])
+    anchors.append(boundaries[-1][1])
+    return anchors
+
+
+def get_index_closest_point(point, sorted_list, fn=lambda x: x):
+    """Return the index of the closest point in the sorted list.
+    Parameters
+    ----------
+    point : the reference sortable element to search.
+    sorted_list : list
+    fn: optional accessor function
+    Returns
+    -------
+    index : int
+    """
+    n = len(sorted_list)
+    if n == 0:
+        return None
+    if n == 1:
+        return 0
+
+    left = 0
+    right = n - 1
+    mid = 0
+
+    if point >= fn(sorted_list[n - 1]):
+        return n - 1
+    if point <= fn(sorted_list[0]):
+        return 0
+
+    while left < right:
+        mid = (left + right) // 2  # find the mid
+        mid_val = fn(sorted_list[mid])
+        if point < mid_val:
+            right = mid
+        elif point > mid_val:
+            left = mid + 1
+        else:
+            return mid
+
+    if mid_val > point:
+        if mid > 0 and (point - fn(sorted_list[mid - 1]) < mid_val - point):
+            return mid - 1
+    elif mid_val < point:
+        if mid < n - 1 and (fn(sorted_list[mid + 1]) - point < point - mid_val):
+            return mid + 1
+    return mid
 
 
 def bbox_intersection_area(ba, bb) -> float:
