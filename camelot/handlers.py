@@ -250,7 +250,5 @@ class PDFHandler:
         parser.prepare_page_parse(
             page_path, layout, dimensions, page, layout_kwargs=layout_kwargs
         )
-        tables = parser.extract_tables(
-            page_path, suppress_stdout=suppress_stdout, layout_kwargs=layout_kwargs
-        )
+        tables = parser.extract_tables()
         return tables
