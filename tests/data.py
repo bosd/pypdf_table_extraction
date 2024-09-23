@@ -2026,6 +2026,11 @@ data_network_vertical_headers = [
 # Compared to network, hybrid detects additional sparse columns
 data_hybrid_vertical_headers = [
     [
+        "", "", "", "", "", "STATE", "", "", "", "CONGRESSIONAL", "", "",
+        "", "", "LEGISLATIVE", "", "", "COUNTY", "", "COUNTY", "", "",
+        "County Commissioner", "", "", "", ""
+    ],
+    [
         "",
         "",
         "",
