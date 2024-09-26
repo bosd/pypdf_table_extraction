@@ -9,9 +9,12 @@ from pypdf import PdfWriter
 from pypdf._utils import StrByteType
 
 from .core import TableList
+from .parsers import Hybrid
 from .parsers import Lattice
+from .parsers import Network
 from .parsers import Stream
 from .utils import TemporaryDirectory
+from .utils import build_file_path_in_temp_dir
 from .utils import download_url
 from .utils import get_page_layout
 from .utils import get_rotation
@@ -33,10 +36,14 @@ class PDFHandler:
         Example: '1,3,4' or '1,4-end' or 'all'.
     password : str, optional (default: None)
         Password for decryption.
-
+    debug : bool, optional (default: False)
+        Whether the parser should store debug information during parsing.
     """
 
-    def __init__(self, filepath: Union[StrByteType, Path], pages="1", password=None):
+    def __init__(
+        self, filepath: Union[StrByteType, Path], pages="1", password=None, debug=False
+    ):
+        self.debug = debug
         if is_url(filepath):
             filepath = download_url(filepath)
         self.filepath: Union[StrByteType, Path] = filepath
@@ -101,12 +108,22 @@ class PDFHandler:
 
         Parameters
         ----------
-        filepath : str
-            Filepath or URL of the PDF file.
         page : int
             Page number.
-        temp : str
-            Tmp directory.
+        layout_kwargs : dict, optional (default: {})
+            A dict of `pdfminer.layout.LAParams <https://github.com/euske/pdfminer/blob/master/pdfminer/layout.py#L33>`_ kwargs.  # noqa
+
+
+        Returns
+        -------
+        layout : object
+
+        dimensions : tuple
+            The dimensions of the pdf page
+
+        filepath : str
+            The path of the single page PDF - either the original, or a
+            normalized version.
 
         """
         infile = PdfReader(filepath, strict=False)
@@ -149,7 +166,7 @@ class PDFHandler:
         suppress_stdout=False,
         parallel=False,
         layout_kwargs=None,
-        **kwargs
+        **kwargs,
     ):
         """Extracts tables by calling parser.get_tables on all single
         page PDFs.
@@ -157,7 +174,7 @@ class PDFHandler:
         Parameters
         ----------
         flavor : str (default: 'lattice')
-            The parsing method to use ('lattice' or 'stream').
+            The parsing method to use.
             Lattice is used by default.
         suppress_stdout : bool (default: False)
             Suppress logs and warnings.
@@ -189,7 +206,8 @@ class PDFHandler:
                     jobs = []
                     for p in self.pages:
                         j = pool.apply_async(
-                            self._parse_page,(p, tempdir, parser, suppress_stdout, layout_kwargs)
+                            self._parse_page,
+                            (p, tempdir, parser, suppress_stdout, layout_kwargs),
                         )
                         jobs.append(j)
 
@@ -198,14 +216,14 @@ class PDFHandler:
                         tables.extend(t)
             else:
                 for p in self.pages:
-                    t = self._parse_page(p, tempdir, parser, suppress_stdout, layout_kwargs)
+                    t = self._parse_page(
+                        p, tempdir, parser, suppress_stdout, layout_kwargs
+                    )
                     tables.extend(t)
 
         return TableList(sorted(tables))
 
-    def _parse_page(
-        self, page, tempdir, parser, suppress_stdout, layout_kwargs
-    ):
+    def _parse_page(self, page, tempdir, parser, suppress_stdout, layout_kwargs):
         """Extracts tables by calling parser.get_tables on a single
         page PDF.
 
@@ -213,8 +231,8 @@ class PDFHandler:
         ----------
         page : str
             Page number to parse
-        parser : Lattice or Stream
-            The parser to use (Lattice or Stream).
+        parser : Lattice, Stream, Network or Hybrid
+            The parser to use.
         suppress_stdout : bool
             Suppress logs and warnings.
         layout_kwargs : dict, optional (default: {})
@@ -224,11 +242,13 @@ class PDFHandler:
         -------
         tables : camelot.core.TableList
             List of tables found in PDF.
-        
+
         """
         self._save_page(self.filepath, page, tempdir)
         page_path = os.path.join(tempdir, f"page-{page}.pdf")
-        tables = parser.extract_tables(
-            page_path, suppress_stdout=suppress_stdout, layout_kwargs=layout_kwargs
+        layout, dimensions = get_page_layout(page_path, **layout_kwargs)
+        parser.prepare_page_parse(
+            page_path, layout, dimensions, page, layout_kwargs=layout_kwargs
         )
+        tables = parser.extract_tables()
         return tables
