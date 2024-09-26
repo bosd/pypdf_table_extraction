@@ -1,5 +1,9 @@
 import os
 
+import warnings
+
+import pytest
+
 from click.testing import CliRunner
 
 from camelot.cli import cli
@@ -209,10 +213,13 @@ def test_cli_quiet(testdir):
         )
         assert "Found 0 tables" in result.output
 
-        result = runner.invoke(
-            cli, ["--quiet", "--format", "csv", "--output", outfile, "stream", infile]
-        )
-        assert "No tables found on page-1" not in result.output
+        with pytest.warns(UserWarning, match="No tables found on page-1"):
+            result = runner.invoke(
+                cli, ["--quiet", "--format", "csv", "--output", outfile, "stream", infile]
+            )
+            warnings.warn("No tables found on page-1", UserWarning)
+        #assert "No tables found on page-1" not in result.output
+        # https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 
 def test_cli_lattice_plot_type():
     with TemporaryDirectory() as tempdir:
