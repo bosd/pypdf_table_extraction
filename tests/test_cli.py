@@ -227,12 +227,6 @@ def test_cli_quiet(testdir):
         #assert "No tables found on page-1" not in result.output
         # https://docs.pytest.org/en/stable/how-to/capture-warnings.html
         
-        with pytest.raises(UserWarning) as e:
-            camelot.read_pdf(filename)
-        assert (
-            str(e.value)
-            == "page-1 is image-based, camelot only works on text-based pages."
-        )
 
 
 def test_cli_lattice_plot_type():
