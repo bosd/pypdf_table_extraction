@@ -213,7 +213,8 @@ def test_cli_quiet(testdir):
         #with warnings.catch_warnings():
             # warnings.simplefilter("error", category=UserWarning)
         # with pytest.warns(UserWarning, match="No tables found on page-1"):
-        with warnings.warn(UserWarning) as record:
+        # with warnings.warn(UserWarning) as record:
+        with warnings.warn("No tables found on page-1", UserWarning) as record:
             result = runner.invoke(
                 cli, ["--quiet", "--format", "csv", "--output", outfile, "stream", infile]
             )
