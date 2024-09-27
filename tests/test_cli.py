@@ -215,13 +215,13 @@ def test_cli_quiet(testdir):
         #with warnings.catch_warnings():
             # warnings.simplefilter("error", category=UserWarning)
         # with pytest.warns(UserWarning, match="No tables found on page-1"):
-        with pytest.warns() as e:
+        with warnings.warn() as record:
             result = runner.invoke(
                 cli, ["--quiet", "--format", "csv", "--output", outfile, "stream", infile]
             )
         # warnings.warn("No tables found on page-1", UserWarning)
         assert (
-            str(e.value)
+            str(record.value)
             == "No tables found on page-1"
         )
         #assert "No tables found on page-1" not in result.output
