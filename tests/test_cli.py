@@ -212,14 +212,28 @@ def test_cli_quiet(testdir):
             cli, ["--format", "csv", "--output", outfile, "stream", infile]
         )
         assert "Found 0 tables" in result.output
-
-        with pytest.warns(UserWarning, match="No tables found on page-1"):
-            result = runner.invoke(
-                cli, ["--quiet", "--format", "csv", "--output", outfile, "stream", infile]
+        with warnings.catch_warnings():
+            warnings.simplefilter("No tables found on page-1", category=UserWarning)
+        # with pytest.warns(UserWarning, match="No tables found on page-1"):
+            with pytest.raises(UserWarning) as e:
+                result = runner.invoke(
+                    cli, ["--quiet", "--format", "csv", "--output", outfile, "stream", infile]
+                )
+            # warnings.warn("No tables found on page-1", UserWarning)
+            assert (
+                str(e.value)
+                == "No tables found on page-1"
             )
-            warnings.warn("No tables found on page-1", UserWarning)
         #assert "No tables found on page-1" not in result.output
         # https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+        
+        with pytest.raises(UserWarning) as e:
+            camelot.read_pdf(filename)
+        assert (
+            str(e.value)
+            == "page-1 is image-based, camelot only works on text-based pages."
+        )
+
 
 def test_cli_lattice_plot_type():
     with TemporaryDirectory() as tempdir:
