@@ -208,10 +208,8 @@ def test_cli_quiet(testdir):
         outfile = os.path.join(tempdir, "empty.csv")
         runner = CliRunner()
 
-        result = runner.invoke(
-            cli, ["--format", "csv", "--output", outfile, "stream", infile]
-        )
-        assert "Found 0 tables" in result.output
+
+
         #with warnings.catch_warnings():
             # warnings.simplefilter("error", category=UserWarning)
         # with pytest.warns(UserWarning, match="No tables found on page-1"):
@@ -224,6 +222,7 @@ def test_cli_quiet(testdir):
             str(record.value)
             == "No tables found on page-1"
         )
+        assert "Found 0 tables" in result.output
         #assert "No tables found on page-1" not in result.output
         # https://docs.pytest.org/en/stable/how-to/capture-warnings.html
         
