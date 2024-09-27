@@ -83,10 +83,10 @@ def test_image_warning(testdir):
         warnings.simplefilter("error", category=UserWarning)
         with pytest.raises(UserWarning) as e:
             camelot.read_pdf(filename)
-            assert (
-                str(e.value)
-                == "page-1 is image-based, camelot only works on text-based pages."
-            )
+        assert (
+            str(e.value)
+            == "page-1 is image-based, camelot only works on text-based pages."
+        )
 
 
 def test_stream_no_tables_on_page(testdir):
@@ -141,7 +141,7 @@ def test_lattice_ghostscript_deprecation_warning(foo_pdf):
         warnings.simplefilter("error")
         with pytest.raises(DeprecationWarning) as e:
             camelot.read_pdf(foo_pdf)
-            assert str(e.value) == ghostscript_deprecation_warning
+        assert str(e.value) == ghostscript_deprecation_warning
 
 
 def test_invalid_url():
