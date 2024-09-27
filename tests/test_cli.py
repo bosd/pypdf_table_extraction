@@ -213,7 +213,7 @@ def test_cli_quiet(testdir):
         )
         assert "Found 0 tables" in result.output
         with warnings.catch_warnings():
-            warnings.simplefilter("No tables found on page-1", category=UserWarning)
+            warnings.simplefilter("error", category=UserWarning)
         # with pytest.warns(UserWarning, match="No tables found on page-1"):
             with pytest.raises(UserWarning) as e:
                 result = runner.invoke(
