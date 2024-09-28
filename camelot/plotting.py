@@ -70,12 +70,13 @@ def draw_labeled_bbox(
     )
 
 
-def draw_pdf(table, ax):
+def draw_pdf(table, ax, to_pdf_scale=True):
     """Draw the content of the table's source pdf into the passed subplot
     Parameters
     ----------
     table : camelot.core.Table
     ax : matplotlib.axes.Axes (optional)
+    to_pdf_scale : bool (optional)
     """
     img = table.get_pdf_image()
     ax.imshow(img, extent=(0, table.pdf_size[0], 0, table.pdf_size[1]))
@@ -127,12 +128,13 @@ def draw_text(table, ax):
     extend_axe_lim(ax, bbox)
 
 
-def prepare_plot(table, ax=None):
+def prepare_plot(table, ax=None, to_pdf_scale=True):
     """Initialize plot and draw common components
     Parameters
     ----------
     table : camelot.core.Table
     ax : matplotlib.axes.Axes (optional)
+    to_pdf_scale : bool (optional)
 
     Returns
     -------
@@ -141,7 +143,7 @@ def prepare_plot(table, ax=None):
     if ax is None:
         fig = plt.figure()
         ax = fig.add_subplot(111, aspect="equal")
-    draw_pdf(table, ax)
+    draw_pdf(table, ax, to_pdf_scale)
     draw_parse_constraints(table, ax)
     return ax
 
@@ -252,23 +254,38 @@ class PlotMethods:
         """
 
         _FOR_LATTICE = table.flavor == "lattice"
-        ax = prepare_plot(table, ax)
+        ax = prepare_plot(table, ax, to_pdf_scale=not _FOR_LATTICE)
 
+        if _FOR_LATTICE:
+            table_bbox = table._bbox_unscaled
+        else:
+            table_bbox = {table._bbox: None}
+
+        xs, ys = [], []
         if not _FOR_LATTICE:
-            draw_text(table, ax)
+            for t in table._text:
+                xs.extend([t[0], t[2]])
+                ys.extend([t[1], t[3]])
+                ax.add_patch(
+                    patches.Rectangle(
+                        (t[0], t[1]), t[2] - t[0], t[3] - t[1],
+                        color="blue",
+                        alpha=0.5
+                    )
+                )
 
-        ax.add_patch(
-            patches.Rectangle(
-                (table._bbox[0], table._bbox[1]),
-                table._bbox[2] - table._bbox[0],
-                table._bbox[3] - table._bbox[1],
-                fill=False, color="red"
+        for t in table_bbox.keys():
+            ax.add_patch(
+                patches.Rectangle(
+                    (t[0], t[1]), t[2] - t[0], t[3] - t[1],
+                    fill=False, color="red"
+                )
             )
-
-        )
-
-        if not _FOR_LATTICE:
-            extend_axe_lim(ax, table._bbox)
+            if not _FOR_LATTICE:
+                xs.extend([t[0], t[2]])
+                ys.extend([t[1], t[3]])
+                ax.set_xlim(min(xs) - 10, max(xs) + 10)
+                ax.set_ylim(min(ys) - 10, max(ys) + 10)
         return ax.get_figure()
 
     @staticmethod
