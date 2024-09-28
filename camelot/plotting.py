@@ -322,7 +322,10 @@ class PlotMethods:
                         linestyle="solid",
                         linewidth=1,
                         marker="o",
-                        markersize=3
+                        markeredgecolor="green",
+                        fillstyle=None,
+                        markersize=4,
+                        alpha=0.8
                     )
 
                     left_v = min(map(lambda tl: tl.x0, tls_v))
@@ -341,7 +344,10 @@ class PlotMethods:
                         linestyle="solid",
                         linewidth=1,
                         marker="o",
-                        markersize=3
+                        markeredgecolor="blue",
+                        fillstyle="full",
+                        markersize=3,
+                        alpha=0.8
                     )
         else:
             for te in table._textedges:
@@ -425,7 +431,7 @@ class PlotMethods:
                     ),
                     color="red",
                     linewidth=5 if final else 2,
-                    fontsize=12 if final else 8,
+                    fontsize=14 if final else 8,
                     label_pos="bottom,left"
                 )
 
@@ -435,6 +441,7 @@ class PlotMethods:
                         bbox[2] - bbox[0] + 2 * max_h_gap,
                         bbox[3] - bbox[1] + 2 * max_v_gap,
                         color="orange",
+                        linestyle="dotted",
                         fill=False
                     )
                 )
@@ -454,9 +461,9 @@ class PlotMethods:
                 "box body #{box_id}".format(
                     box_id=box_id
                 ),
-                color="orange",
+                color="cyan",
                 linewidth=2,
-                label_pos="bottom,left"
+                label_pos="bottom,right"
             )
             for col_anchor in col_search["cols_anchors"]:
                 # Display a green line at the col boundary line throughout the
