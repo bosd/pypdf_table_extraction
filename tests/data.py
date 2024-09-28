@@ -815,6 +815,10 @@ data_stream_table_rotated = [
     ],
 ]
 
+# The streaming algorithm incorrectly includes a header in the result.
+# Trimming the table for the test of network, which doesn't include it.
+data_network_table_rotated = data_stream_table_rotated[1:]
+
 data_stream_two_tables_1 = [
     [
         "Program. Represents arrests reported (not charged) by 12,910 agencies with a total population of 247,526,916 as estimated",
@@ -1277,6 +1281,10 @@ data_stream_two_tables_1 = [
     ],
 ]
 
+# The streaming algorithm incorrectly includes a header and a footer.
+# Trimming the table for the test of network, which doesn't include it.
+data_network_two_tables_1 = data_stream_two_tables_1[3:-1]
+
 
 data_stream_two_tables_2 = [
     ["Table 325. Arrests by Race: 2009", "", "", "", "", ""],
@@ -1557,6 +1565,11 @@ data_stream_two_tables_2 = [
     ],
     ["1 Except forcible rape and prostitution.", "", "", "", "", ""],
 ]
+
+
+# The streaming algorithm incorrectly includes a header and a footer.
+# Trimming the table for the test of network, which doesn't include it.
+data_network_two_tables_2 = data_stream_two_tables_2[3:-1]
 
 data_network_two_tables_b_1 = [
     ["1", "Ghfhbdhj", "1", "Hgfdhgjsdhjdsf"],
@@ -2540,6 +2553,9 @@ data_stream_table_areas = [
     ["(each day of the payroll period)", ""],
 ]
 
+# Network doesn't recognize the footer as belonging to the table.
+data_network_table_regions = data_stream_table_areas[:-1]
+
 data_stream_columns = [
     [
         "Clave",
@@ -3027,6 +3043,14 @@ data_stream_split_text = [
 ]
 
 
+# The stream algorithm excludes the string "Alphabetic Listing by type"
+data_network_split_text = []
+data_network_split_text.extend(data_stream_split_text)
+data_network_split_text[0] = [
+    'FEB', 'RUAR', 'Y 2014 M27 (BUS)', '',
+    'ALPHABETIC LISTING BY T', 'YPE', '', '', '', 'ABLPDM27'
+]
+
 data_stream_flag_size = [
     [
         "States",
@@ -3246,6 +3270,57 @@ data_stream_flag_size = [
     ],
 ]
 
+
+# Network adds more content into the header.
+data_network_flag_size = [
+    ['', '', '', '', '(As at end-March)', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', '', '', '', '(` Billion)']
+]
+data_network_flag_size.extend(data_stream_flag_size)
+
+data_network_strip_text = [
+    ["VinsauVerre", ""],
+    ["LesBlancs", "12.5CL"],
+    ["A.O.PCôtesduRhône", ""],
+    ["DomainedelaGuicharde«Autourdelachapelle»2016", "8€"],
+    ["A.O.PVacqueyras", ""],
+    ["DomainedeMontvac«Melodine»2016", "10€"],
+    ["A.O.PChâteauneufduPape", ""],
+    ["DomainedeBeaurenard2017", "13€"],
+    ["A.O.PCôteauxduLanguedoc", ""],
+    ["VillaTempora«Untempspourelle»2014", "9€"],
+    ["A.O.PCôtesdeProvence", ""],
+    ["ChâteauGrandBoise2017", "9€"],
+    ["LesRosés", "125CL"],
+    ["A.O.PCôtesduRhône", ""],
+    ["DomainedelaFlorane«AfleurdePampre»2016", "8€"],
+    ["FamilleCoulon(DomaineBeaurenard)Biotifulfox2017", "8€"],
+    ["A.O.PVacqueyras", ""],
+    ["DomainedeMontvac2017", "9€"],
+    ["A.O.PLanguedoc", ""],
+    ["DomainedeJoncas«Nébla»2015", "8€"],
+    ["VillaTempora«L’arroseurarrosé»2015", "9€"],
+    ["A.O.PCôtesdeProvence", ""],
+    ["ChâteauGrandBoise«SainteVictoire»2017", "9€"],
+    ["ChâteauLéoube2016", "10€"],
+    ["LesRouges", "12CL"],
+    ["A.O.PCôtesduRhône", ""],
+    ["DomainedeDionysos«LaCigalette»", "8€"],
+    ["ChâteauSaintEstèved’Uchaux«GrandeRéserve»2014", "9€"],
+    ["DomainedelaGuicharde«CuvéeMassillan»2016", "9€"],
+    ["DomainedelaFlorane«TerrePourpre»2014", "10€"],
+    ["L’OratoireStMartin«RéservedesSeigneurs»2015", "11€"],
+    ["A.O.PSaintJoseph", ""],
+    ["DomaineMonierPerréol«Châtelet»2015", "13€"],
+    ["A.O.PChâteauneufduPape", ""],
+    ["DomainedeBeaurenard2011", "15€"],
+    ["A.O.PCornas", ""],
+    ["DomaineLionnet«TerreBrûlée»2012", "15€"],
+]
+
+# Stream only detects part of the table
+
+
 data_stream_strip_text = [
     ["VinsauVerre", ""],
     ["LesBlancs", "12.5CL"],
@@ -3308,6 +3383,12 @@ data_stream_edge_tol = [
     ],
     ["period.", ""],
 ]
+
+# The stream algorithm ends up including a footer, which network correctly
+# skips.
+
+data_network_edge_tol = data_stream_edge_tol[:-3]
+
 
 data_lattice = [
     [
