@@ -1,6 +1,10 @@
 # noqa
 
-data_stream = [
+data_hybrid = [
+    [
+        "", "Table: 5            Public Health Outlay 2012-13 (Budget"
+        " Estimates)        (Rs. in 000)", "", "", "", "", "", ""
+    ],
     ["States-A", "Revenue", "", "Capital", "", "Total", "Others(1)", "Total"],
     ["", "", "", "", "", "Revenue &", "", ""],
     ["", "Medical &", "Family", "Medical &", "Family", "", "", ""],
@@ -220,6 +224,10 @@ data_stream = [
         "25,891,232",
     ],
 ]
+
+# Hybrid includes the header because the boundaries of the table include it,
+# but stream/network don't include it.
+data_stream = data_hybrid[1:]
 
 data_stream_table_rotated = [
     [
@@ -814,6 +822,109 @@ data_stream_table_rotated = [
         "3,970",
     ],
 ]
+
+
+data_hybrid_table_rotated_footer = [
+    [
+        "",
+        "	Note: If more than one method is used, only th...		",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+    ],
+    [
+        "not shown separately.	",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+    ],
+    [
+        "na = Not available	",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+    ],
+    [
+        "",
+        "ns = Not shown; see table 2b, footnote 1	",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+    ],
+    [
+        "( ) Based on 25-49 unweighted cases.	",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+    ]
+]
+
+# The hybrid parser catches some additional text from the footer
+data_hybrid_table_rotated = []
+data_hybrid_table_rotated.extend(data_stream_table_rotated)
 
 # The streaming algorithm incorrectly includes a header in the result.
 # Trimming the table for the test of network, which doesn't include it.
@@ -3638,6 +3749,52 @@ data_lattice_process_background = [
         "3,183",
     ],
     ["Kerala", "23.2.2010 to \n11.3.2010", "9", "17", "1.42", "3,559", "2,173", "855"],
+    ["Total", "", "47", "92", "11.81", "22,455", "19,584", "10,644"],
+]
+
+data_hybrid_process_background = [
+    [
+        "State",
+        "Date",
+        "Halt",
+        "Halt",
+        "Persons",
+        "Persons",
+        "Persons",
+        "Persons",
+    ],
+    ["", "", "stations", "days", "directly", "trained", "counseled", "tested"],
+    ["", "", "", "", "reached", "", "", "for HIV"],
+    ["", "", "", "", "(in lakh)", "", "", ""],
+    ["Delhi", "1.12.2009", "8", "17", "1.29", "3,665", "2,409", "1,000"],
+    ["Rajasthan", "2.12.2009 to", "", "", "", "", "", ""],
+    ["", "19.12.2009", "", "", "", "", "", ""],
+    ["Gujarat", "20.12.2009 to", "6", "13", "6.03", "3,810", "2,317", "1,453"],
+    ["", "3.1.2010", "", "", "", "", "", ""],
+    [
+        "Maharashtra",
+        "4.01.2010 to",
+        "13",
+        "26",
+        "1.27",
+        "5,680",
+        "9,027",
+        "4,153",
+    ],
+    ["", "1.2.2010", "", "", "", "", "", ""],
+    [
+        "Karnataka",
+        "2.2.2010 to",
+        "11",
+        "19",
+        "1.80",
+        "5,741",
+        "3,658",
+        "3,183",
+    ],
+    ["", "22.2.2010", "", "", "", "", "", ""],
+    ["Kerala", "23.2.2010 to", "9", "17", "1.42", "3,559", "2,173", "855"],
+    ["", "11.3.2010", "", "", "", "", "", ""],
     ["Total", "", "47", "92", "11.81", "22,455", "19,584", "10,644"],
 ]
 
