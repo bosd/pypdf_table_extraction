@@ -17,20 +17,15 @@ def test_hybrid(testdir):
 
 
 def test_hybrid_table_rotated(testdir):
-    df = pd.DataFrame(data_network_table_rotated)
+    df = pd.DataFrame(data_hybrid_table_rotated)
 
     filename = os.path.join(testdir, "clockwise_table_2.pdf")
     tables = camelot.read_pdf(filename, flavor="hybrid")
-    # tables[0].df[:-5]
-    print(tables[0].df[:-5])
-    print("\ntest\n")
-    print(df)
-    assert_frame_equal(df, tables[0].df[:-5])
+    assert_frame_equal(df, tables[0].df)
 
-    # filename = os.path.join(testdir, "anticlockwise_table_2.pdf")
-    # tables = camelot.read_pdf(filename, flavor="hybrid")
-    # tables = tables[:-3]
-    # assert_frame_equal(df, tables[0].df)
+    filename = os.path.join(testdir, "anticlockwise_table_2.pdf")
+    tables = camelot.read_pdf(filename, flavor="hybrid")
+    assert_frame_equal(df, tables[0].df)
 
 
 def test_hybrid_two_tables(testdir):
