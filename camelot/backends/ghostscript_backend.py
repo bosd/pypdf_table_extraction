@@ -12,7 +12,7 @@ def installed_posix():
 def installed_windows():
     try:
     #    import ghostscript
-         library = ghostscript.__win32_finddll()
+         library = ghostscript.gs.__win32_finddll()
     #        library = find_library(
     #            "C:\ProgramData\\".join(("gsdll.dll"))
     #        )
