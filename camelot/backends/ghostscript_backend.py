@@ -17,12 +17,13 @@ def installed_windows():
 
 class GhostscriptBackend:
     def installed(self):
-        if sys.platform in ["linux", "darwin"]:
-            return installed_posix()
-        elif sys.platform == "win32":
-            return installed_windows()
-        else:
-            return installed_posix()
+        try:
+            import ghostscript
+        except RuntimeError:
+            return None
+        return not None
+
+
 
     def convert(self, pdf_path, png_path, resolution=300):
         if not self.installed():
