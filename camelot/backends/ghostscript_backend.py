@@ -11,11 +11,11 @@ def installed_posix():
 def installed_windows():
     try:
             library = find_library(
-                "".join(("gsdll.dll"))
+                "C:\ProgramData\\".join(("gsdll.dll"))
             )
     except FileNotFoundError:
             library = find_library(
-                "".join(("gsdll64.dll"))
+                "C:\ProgramData\\".join(("gsdll64.dll"))
             )
     return library is not None
 
