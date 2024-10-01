@@ -1,5 +1,6 @@
 import ctypes
 import sys
+import ghostscript
 from ctypes.util import find_library
 
 
@@ -9,15 +10,18 @@ def installed_posix():
 
 
 def installed_windows():
-    # try:
+    try:
+    #    import ghostscript
+         library = ghostscript.__win32_finddll()
     #        library = find_library(
     #            "C:\ProgramData\\".join(("gsdll.dll"))
     #        )
-    # except FileNotFoundError:
+    except RuntimeError:
+        return None
     #        library = find_library(
     #            "C:\ProgramData\\".join(("gsdll64.dll"))
     #        )
-    return True # library is not None
+    return library is not None
 
 
 class GhostscriptBackend:
