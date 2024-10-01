@@ -6,13 +6,13 @@ from ctypes.util import find_library
 
 def installed_posix():
     library = find_library("gs")
-    import ghostscript
+    # import ghostscript
     return library is not None
 
 
 def installed_windows():
     try:
-         import ghostscript
+        import ghostscript
     #     library = ghostscript.gs.__win32_finddll()
     #        library = find_library(
     #            "C:\ProgramData\\".join(("gsdll.dll"))
@@ -22,7 +22,7 @@ def installed_windows():
     #        library = find_library(
     #            "C:\ProgramData\\".join(("gsdll64.dll"))
     #        )
-    return library is not None
+    return not None
 
 
 class GhostscriptBackend:
@@ -41,7 +41,7 @@ class GhostscriptBackend:
                 " here: https://pypdf-table-extraction.readthedocs.io/en/latest/user/install-deps.html"
             )
 
-        # import ghostscript
+        import ghostscript
 
         gs_command = [
             "gs",
