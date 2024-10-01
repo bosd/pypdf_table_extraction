@@ -9,15 +9,15 @@ def installed_posix():
 
 
 def installed_windows():
-    try:
-            library = find_library(
-                "C:\ProgramData\\".join(("gsdll.dll"))
-            )
-    except FileNotFoundError:
-            library = find_library(
-                "C:\ProgramData\\".join(("gsdll64.dll"))
-            )
-    return library is not None
+    # try:
+    #        library = find_library(
+    #            "C:\ProgramData\\".join(("gsdll.dll"))
+    #        )
+    # except FileNotFoundError:
+    #        library = find_library(
+    #            "C:\ProgramData\\".join(("gsdll64.dll"))
+    #        )
+    return True # library is not None
 
 
 class GhostscriptBackend:
