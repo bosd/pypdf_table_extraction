@@ -1,3 +1,5 @@
+"""Contains the core functions to parse tables from PDFs."""
+
 import math
 import os
 import sqlite3
@@ -30,6 +32,7 @@ ALL_ALIGNMENTS = HORIZONTAL_ALIGNMENTS + VERTICAL_ALIGNMENTS
 
 class TextAlignment:
     """Represents a list of textlines sharing an alignment on a coordinate.
+
     The alignment can be left/right/middle or top/bottom/center.
     (PDF coordinate space)
 
@@ -59,7 +62,7 @@ class TextAlignment:
         self.textlines = [textline]
         self.align = align
 
-    def __repr__(self):
+    def __repr__(self):  # noqa D105
         text_inside = " | ".join(
             map(lambda x: x.get_text(), self.textlines[:2])
         ).replace("\n", "")
@@ -79,8 +82,9 @@ class TextAlignment:
 
 
 class TextEdge(TextAlignment):
-    """Defines a text edge coordinates relative to a left-bottom
-    origin. (PDF coordinate space)
+    """Defines a text edge coordinates relative to a left-bottom origin.
+
+    (PDF coordinate space)
     An edge is an alignment bounded over a segment.
 
     Parameters
@@ -108,7 +112,7 @@ class TextEdge(TextAlignment):
         self.y1 = textline.y1
         self.is_valid = False
 
-    def __repr__(self):
+    def __repr__(self):  # noqa D105
         x = round(self.coord, 2)
         y0 = round(self.y0, 2)
         y1 = round(self.y1, 2)
@@ -117,7 +121,9 @@ class TextEdge(TextAlignment):
         )
 
     def update_coords(self, x, textline, edge_tol=50):
-        """Updates the text edge's x and bottom y coordinates and sets
+        """Update text edge coordinates.
+
+        Update the text edge's x and bottom y coordinates and sets
         the is_valid attribute.
         """
         if math.isclose(self.y0, textline.y0, abs_tol=edge_tol):
@@ -146,7 +152,7 @@ class TextAlignments:
         return NotImplemented
 
     def _register_textline(self, textline):
-        """Updates an existing text edge in the current dict."""
+        """Update an existing text edge in the current dict."""
         coords = get_textline_coords(textline)
         for alignment_id, alignment_array in self._text_alignments.items():
             coord = coords[alignment_id]
@@ -180,7 +186,9 @@ class TextAlignments:
 
 
 class TextEdges(TextAlignments):
-    """Defines a dict of left, right and middle text edges found on
+    """Defines a dict text edges on the PDF page.
+
+    The dict contains the left, right and middle text edges found on
     the PDF page. The dict has three keys based on the alignments,
     and each key's value is a list of camelot.core.TextEdge objects.
     """
@@ -194,7 +202,7 @@ class TextEdges(TextAlignments):
         return TextEdge(coord, textline, align)
 
     def add(self, coord, textline, align):
-        """Adds a new text edge to the current dict."""
+        """Add a new text edge to the current dict."""
         te = self._create_new_text_alignment(coord, textline, align)
         self._text_alignments[align].append(te)
 
@@ -202,17 +210,16 @@ class TextEdges(TextAlignments):
         alignment.update_coords(coord, textline, self.edge_tol)
 
     def generate(self, textlines):
-        """Generates the text edges dict based on horizontal text
-        rows.
-        """
+        """Generates the text edges dict based on horizontal text rows."""
         for tl in textlines:
             if len(tl.get_text().strip()) > 1:  # TODO: hacky
                 self._register_textline(tl)
 
     def get_relevant(self):
-        """Returns the list of relevant text edges (all share the same
-        alignment) based on which list intersects horizontal text rows
-        the most.
+        """Return the list of relevant text edges.
+
+        (all share the same alignment)
+        based on which list intersects horizontal text rows the most.
         """
         intersections_sum = {
             "left": sum(
@@ -239,8 +246,9 @@ class TextEdges(TextAlignments):
         )
 
     def get_table_areas(self, textlines, relevant_textedges):
-        """Returns a dict of interesting table areas on the PDF page
-        calculated using relevant text edges.
+        """Return a dict of interesting table areas on the PDF page.
+
+        The table areas are calculated using relevant text edges.
         """
 
         def pad(area, average_row_height):
@@ -312,7 +320,9 @@ class TextEdges(TextAlignments):
 
 
 class Cell:
-    """Defines a cell in a table with coordinates relative to a
+    """Defines a cell in a table.
+
+    With coordinates relative to a
     left-bottom origin. (PDF coordinate space)
 
     Parameters
@@ -370,7 +380,7 @@ class Cell:
         self.vspan = False
         self._text = ""
 
-    def __repr__(self):
+    def __repr__(self):  # noqa D105
         x1 = round(self.x1)
         y1 = round(self.y1)
         x2 = round(self.x2)
@@ -378,11 +388,11 @@ class Cell:
         return f"<Cell x1={x1} y1={y1} x2={x2} y2={y2}>"
 
     @property
-    def text(self):
+    def text(self):  # noqa D102
         return self._text
 
     @text.setter
-    def text(self, t):
+    def text(self, t):  # noqa D105
         self._text = "".join([self._text, t])
 
     @property
@@ -392,8 +402,9 @@ class Cell:
 
 
 class Table:
-    """Defines a table with coordinates relative to a left-bottom
-    origin. (PDF coordinate space)
+    """Defines a table with coordinates relative to a left-bottom origin.
+
+    (PDF coordinate space)
 
     Parameters
     ----------
@@ -443,9 +454,28 @@ class Table:
         self._image_path = None  # Temporary file to hold an image of the pdf
 
     def __repr__(self):
+        """Return a string representation of the class .
+
+        Returns
+        -------
+        [type]
+            [description]
+        """
         return f"<{self.__class__.__name__} shape={self.shape}>"
 
     def __lt__(self, other):
+        """Return True if the two pages are less than the current page .
+
+        Parameters
+        ----------
+        other : [type]
+            [description]
+
+        Returns
+        -------
+        [type]
+            [description]
+        """
         if self.page == other.page:
             if self.order < other.order:
                 return True
@@ -462,7 +492,9 @@ class Table:
 
     @property
     def parsing_report(self):
-        """Returns a parsing report with %accuracy, %whitespace,
+        """Returns a parsing report.
+
+        with % accuracy, % whitespace,
         table number on page and page number.
         """
         # pretty?
@@ -475,7 +507,7 @@ class Table:
         return report
 
     def record_metadata(self, parser):
-        """Record data about the origin of the table"""
+        """Record data about the origin of the table."""
         self.flavor = parser.id
         self.filename = parser.filename
         self.debug_info = parser.debug_info
@@ -489,7 +521,7 @@ class Table:
         self.pdf_size = (parser.pdf_width, parser.pdf_height)
 
     def get_pdf_image(self):
-        """Compute pdf image and cache it"""
+        """Compute pdf image and cache it."""
         if self._image is None:
             if self._image_path is None:
                 self._image_path = build_file_path_in_temp_dir(
@@ -501,14 +533,16 @@ class Table:
         return self._image
 
     def set_all_edges(self):
-        """Sets all table edges to True."""
+        """Set all table edges to True."""
         for row in self.cells:
             for cell in row:
                 cell.left = cell.right = cell.top = cell.bottom = True
         return self
 
     def set_edges(self, vertical, horizontal, joint_tol=2):
-        """Sets a cell's edges to True depending on whether the cell's
+        """Set the edges of the joint.
+
+        Set a cell's edges to True depending on whether the cell's
         coordinates overlap with the line's coordinates within a
         tolerance.
 
@@ -518,7 +552,8 @@ class Table:
             List of detected vertical lines.
         horizontal : list
             List of detected horizontal lines.
-
+        joint_tol : int, optional
+            [description], by default 2
         """
 
         def find_close_point(over, coord, joint_tol):
@@ -584,7 +619,9 @@ class Table:
         return self
 
     def set_span(self):
-        """Sets a cell's hspan or vspan attribute to True depending
+        """Set a cell's hspan or vspan attribute.
+
+        Set the cell's hspan or vspan attribute to True depending
         on whether the cell spans horizontally or vertically.
         """
         for row in self.cells:
@@ -616,6 +653,7 @@ class Table:
 
     def copy_spanning_text(self, copy_text=None):
         """Copies over text in empty spanning cells.
+
         Parameters
         ----------
         copy_text : list, optional (default: None)
@@ -623,6 +661,7 @@ class Table:
             Select one or more strings from above and pass them as a list
             to specify the direction in which text should be copied over
             when a cell spans multiple rows or columns.
+
         Returns
         -------
         t : camelot.core.Table
@@ -643,7 +682,7 @@ class Table:
         return self
 
     def to_csv(self, path, **kwargs):
-        """Writes Table to a comma-separated values (csv) file.
+        """Write Table(s) to a comma-separated values (csv) file.
 
         For kwargs, check :meth:`pandas.DataFrame.to_csv`.
 
@@ -658,7 +697,7 @@ class Table:
         self.df.to_csv(path, **kw)
 
     def to_json(self, path, **kwargs):
-        """Writes Table to a JSON file.
+        """Write Table(s) to a JSON file.
 
         For kwargs, check :meth:`pandas.DataFrame.to_json`.
 
@@ -675,7 +714,7 @@ class Table:
             f.write(json_string)
 
     def to_excel(self, path, **kwargs):
-        """Writes Table to an Excel file.
+        """Write Table(s) to an Excel file.
 
         For kwargs, check :meth:`pandas.DataFrame.to_excel`.
 
@@ -695,7 +734,7 @@ class Table:
         writer.save()
 
     def to_html(self, path, **kwargs):
-        """Writes Table to an HTML file.
+        """Write Table(s) to an HTML file.
 
         For kwargs, check :meth:`pandas.DataFrame.to_html`.
 
@@ -710,7 +749,7 @@ class Table:
             f.write(html_string)
 
     def to_markdown(self, path, **kwargs):
-        """Writes Table to a Markdown file.
+        """Write Table(s) to a Markdown file.
 
         For kwargs, check :meth:`pandas.DataFrame.to_markdown`.
 
@@ -725,7 +764,7 @@ class Table:
             f.write(md_string)
 
     def to_sqlite(self, path, **kwargs):
-        """Writes Table to sqlite database.
+        """Write Table(s) to sqlite database.
 
         For kwargs, check :meth:`pandas.DataFrame.to_sql`.
 
@@ -745,8 +784,9 @@ class Table:
 
 
 class TableList:
-    """Defines a list of camelot.core.Table objects. Each table can
-    be accessed using its index.
+    """Defines a list of camelot.core.Table objects.
+
+    Each table can be accessed using its index.
 
     Attributes
     ----------
@@ -755,19 +795,19 @@ class TableList:
 
     """
 
-    def __init__(self, tables):
+    def __init__(self, tables):  # noqa D105
         self._tables = tables
 
-    def __repr__(self):
+    def __repr__(self):  # noqa D105
         return f"<{self.__class__.__name__} n={self.n}>"
 
-    def __len__(self):
+    def __len__(self):  # noqa D105
         return len(self._tables)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx):  # noqa D105
         return self._tables[idx]
 
-    def __iter__(self):
+    def __iter__(self):  # noqa D105
         yield from self._tables
 
     @staticmethod
@@ -776,6 +816,7 @@ class TableList:
 
     @property
     def n(self):
+        """The number of tables in the list."""
         return len(self)
 
     def _write_file(self, f=None, **kwargs):
@@ -801,7 +842,7 @@ class TableList:
                 z.write(filepath, os.path.basename(filepath))
 
     def export(self, path, f="csv", compress=False):
-        """Exports the list of tables to specified file format.
+        """Export the list of tables to specified file format.
 
         Parameters
         ----------
