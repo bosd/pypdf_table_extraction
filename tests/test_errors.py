@@ -9,7 +9,10 @@ from tests.conftest import skip_on_windows
 
 
 def test_unknown_flavor(foo_pdf):
-    message = "Unknown flavor specified." " Use either 'lattice' or 'stream'"
+    message = (
+        "Unknown flavor specified."
+        " Use either 'lattice', 'stream', 'network' or 'hybrid'"
+    )
     with pytest.raises(NotImplementedError, match=message):
         camelot.read_pdf(foo_pdf, flavor="chocolate")
 
@@ -104,7 +107,7 @@ def test_stream_no_tables_in_area(testdir):
         warnings.simplefilter("error")
         with pytest.raises(UserWarning) as e:
             tables = camelot.read_pdf(filename, flavor="stream")
-        assert str(e.value) == "No tables found in table area 1"
+        assert str(e.value) == "No tables found in table area (0, 0, 792, 612)"
 
 
 def test_lattice_no_tables_on_page(testdir):
