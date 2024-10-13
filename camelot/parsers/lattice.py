@@ -15,6 +15,8 @@ from ..utils import segments_in_bbox
 from ..utils import text_in_bbox_per_axis
 from .base import BaseParser
 
+from ..backends import ImageConversionBackend
+
 
 class Lattice(BaseParser):
     """Lattice method looks for lines between text to parse the table.
@@ -94,7 +96,6 @@ class Lattice(BaseParser):
         threshold_constant=-2,
         iterations=0,
         resolution=300,
-        backend="pdfium",
         **kwargs,
     ):
         super().__init__("lattice")
@@ -113,7 +114,7 @@ class Lattice(BaseParser):
         self.threshold_constant = threshold_constant
         self.iterations = iterations
         self.resolution = resolution
-        self.backend = Lattice._get_backend(backend)
+        self.backend = ImageConversionBackend()
         self.image_path = None
         self.pdf_image = None
 
