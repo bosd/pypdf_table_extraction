@@ -94,7 +94,7 @@ class Lattice(BaseParser):
         threshold_constant=-2,
         iterations=0,
         resolution=300,
-        backend="ghostscript",
+        backend="pdfium",
         **kwargs,
     ):
         super().__init__("lattice")
@@ -128,7 +128,7 @@ class Lattice(BaseParser):
         if isinstance(backend, str):
             if backend not in BACKENDS.keys():
                 raise NotImplementedError(
-                    f"Unknown backend {backend!r} specified. Please use either 'poppler' or 'ghostscript'."
+                    f"Unknown backend {backend!r} specified. Please use 'pdfium', 'poppler' or 'ghostscript'."
                 )
 
             return BACKENDS[backend]()
