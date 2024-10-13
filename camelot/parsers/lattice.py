@@ -96,6 +96,8 @@ class Lattice(BaseParser):
         threshold_constant=-2,
         iterations=0,
         resolution=300,
+        use_fallback=True,
+        backend="pdfium",
         **kwargs,
     ):
         super().__init__("lattice")
@@ -114,7 +116,9 @@ class Lattice(BaseParser):
         self.threshold_constant = threshold_constant
         self.iterations = iterations
         self.resolution = resolution
-        self.backend = ImageConversionBackend()
+        self.use_fallback = use_fallback
+        self.backend = Lattice._get_backend(backend)
+        self.icb = ImageConversionBackend(use_fallback=use_fallback, backend=backend)
         self.image_path = None
         self.pdf_image = None
 
@@ -204,7 +208,7 @@ class Lattice(BaseParser):
         self.image_path = build_file_path_in_temp_dir(
             os.path.basename(self.filename), ".png"
         )
-        self.backend.convert(self.filename, self.image_path)
+        self.icb.convert(self.filename, self.image_path)
 
         self.pdf_image, self.threshold = adaptive_threshold(
             self.image_path,
