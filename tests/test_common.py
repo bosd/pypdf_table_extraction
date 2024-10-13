@@ -36,7 +36,7 @@ def test_password(testdir):
 
 def test_repr_pdfium(testdir):
     filename = os.path.join(testdir, "foo.pdf")
-    tables = camelot.read_pdf(filename, backend="pdfium")
+    tables = camelot.read_pdf(filename, flavor="lattice", backend="pdfium", use_fallback=False)  # bosd edit
     assert repr(tables) == "<TableList n=1>"
     assert repr(tables[0]) == "<Table shape=(7, 7)>"
     assert repr(tables[0].cells[0][0]) == "<Cell x1=121 y1=218 x2=165 y2=234>"
@@ -62,7 +62,7 @@ def test_repr_ghostscript(testdir):
 
 def test_url_pdfium():
     url = "https://camelot-py.readthedocs.io/en/master/_static/pdf/foo.pdf"
-    tables = camelot.read_pdf(url, backend="pdfium")
+    tables = camelot.read_pdf(url, flavor="lattice", backend="pdfium", use_fallback=False)  # bosd edit
     assert repr(tables) == "<TableList n=1>"
     assert repr(tables[0]) == "<Table shape=(7, 7)>"
     assert repr(tables[0].cells[0][0]) == "<Cell x1=121 y1=218 x2=165 y2=234>"
@@ -88,17 +88,17 @@ def test_url_ghostscript(testdir):
 
 def test_pages_pdfium():
     url = "https://camelot-py.readthedocs.io/en/master/_static/pdf/foo.pdf"
-    tables = camelot.read_pdf(url, backend="pdfium")
+    tables = camelot.read_pdf(url, backend="pdfium", use_fallback=False)
     assert repr(tables) == "<TableList n=1>"
     assert repr(tables[0]) == "<Table shape=(7, 7)>"
     assert repr(tables[0].cells[0][0]) == "<Cell x1=121 y1=218 x2=165 y2=234>"
 
-    tables = camelot.read_pdf(url, pages="1-end", backend="pdfium")
+    tables = camelot.read_pdf(url, pages="1-end", backend="pdfium", use_fallback=False)
     assert repr(tables) == "<TableList n=1>"
     assert repr(tables[0]) == "<Table shape=(7, 7)>"
     assert repr(tables[0].cells[0][0]) == "<Cell x1=121 y1=218 x2=165 y2=234>"
 
-    tables = camelot.read_pdf(url, pages="all", backend="pdfium")
+    tables = camelot.read_pdf(url, pages="all", backend="pdfium", use_fallback=False)
     assert repr(tables) == "<TableList n=1>"
     assert repr(tables[0]) == "<Table shape=(7, 7)>"
     assert repr(tables[0].cells[0][0]) == "<Cell x1=121 y1=218 x2=165 y2=234>"
@@ -107,17 +107,17 @@ def test_pages_pdfium():
 @skip_pdftopng
 def test_pages_poppler():
     url = "https://pypdf-table-extraction.readthedocs.io/en/latest/_static/pdf/foo.pdf"
-    tables = camelot.read_pdf(url, backend="poppler")
+    tables = camelot.read_pdf(url, backend="poppler", use_fallback=False)
     assert repr(tables) == "<TableList n=1>"
     assert repr(tables[0]) == "<Table shape=(7, 7)>"
     assert repr(tables[0].cells[0][0]) == "<Cell x1=120 y1=219 x2=165 y2=234>"
 
-    tables = camelot.read_pdf(url, pages="1-end", backend="poppler")
+    tables = camelot.read_pdf(url, pages="1-end", backend="poppler", use_fallback=False)
     assert repr(tables) == "<TableList n=1>"
     assert repr(tables[0]) == "<Table shape=(7, 7)>"
     assert repr(tables[0].cells[0][0]) == "<Cell x1=120 y1=219 x2=165 y2=234>"
 
-    tables = camelot.read_pdf(url, pages="all", backend="poppler")
+    tables = camelot.read_pdf(url, pages="all", backend="poppler", use_fallback=False)
     assert repr(tables) == "<TableList n=1>"
     assert repr(tables[0]) == "<Table shape=(7, 7)>"
     assert repr(tables[0].cells[0][0]) == "<Cell x1=120 y1=219 x2=165 y2=234>"
@@ -126,17 +126,17 @@ def test_pages_poppler():
 @skip_on_windows
 def test_pages_ghostscript():
     url = "https://pypdf-table-extraction.readthedocs.io/en/latest/_static/pdf/foo.pdf"
-    tables = camelot.read_pdf(url, backend="ghostscript")
+    tables = camelot.read_pdf(url, backend="ghostscript", use_fallback=False)
     assert repr(tables) == "<TableList n=1>"
     assert repr(tables[0]) == "<Table shape=(7, 7)>"
     assert repr(tables[0].cells[0][0]) == "<Cell x1=120 y1=218 x2=165 y2=234>"
 
-    tables = camelot.read_pdf(url, pages="1-end", backend="ghostscript")
+    tables = camelot.read_pdf(url, pages="1-end", backend="ghostscript", use_fallback=False)
     assert repr(tables) == "<TableList n=1>"
     assert repr(tables[0]) == "<Table shape=(7, 7)>"
     assert repr(tables[0].cells[0][0]) == "<Cell x1=120 y1=218 x2=165 y2=234>"
 
-    tables = camelot.read_pdf(url, pages="all", backend="ghostscript")
+    tables = camelot.read_pdf(url, pages="all", backend="ghostscript", use_fallback=False)
     assert repr(tables) == "<TableList n=1>"
     assert repr(tables[0]) == "<Table shape=(7, 7)>"
     assert repr(tables[0].cells[0][0]) == "<Cell x1=120 y1=218 x2=165 y2=234>"
