@@ -3,17 +3,27 @@
 from camelot.backends.base import ConversionBackend
 
 
+PDFIUM_EXC = None
+
 try:
     import pypdfium2 as pdfium
-except Exception as e:
-    pdfium = None
-    pdfium_exc = e
-else:
-    pdfium_exc = None
+
+    # return True
+except ModuleNotFoundError as e:
+    # pdfium = None
+    PDFIUM_EXC = e
+    # raise ModuleNotFoundError from e
+
+# else:
+#     PDFIUM_EXC = None
 
 
 class PdfiumBackend(ConversionBackend):
     """Classmethod to create PdfiumBackend."""
+
+    def installed(self) -> bool:  # noqa D102
+        if not PDFIUM_EXC:
+            return True
 
     def convert(self, pdf_path: str, png_path: str, resolution: int = 300) -> None:
         """Convert PDF to png.
@@ -30,8 +40,10 @@ class PdfiumBackend(ConversionBackend):
         OSError
             Raise an error if pdfium is not installed
         """
-        if not pdfium:
-            raise OSError(f"pypdfium2 is not available: {pdfium_exc!r}")
+        if not self.installed():
+            # return None
+            raise OSError(f"pypdfium2 is not available: {PDFIUM_EXC!r}")
+            # or ModuleNotFoundError
         doc = pdfium.PdfDocument(pdf_path)
         doc.init_forms()
         image = doc[0].render(scale=resolution / 72).to_pil()
