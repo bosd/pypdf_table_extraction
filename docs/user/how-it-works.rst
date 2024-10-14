@@ -87,7 +87,7 @@ Let's see how Lattice processes the second page of `this PDF`_, step-by-step.
 .. _network:
 
 Network
-------
+-------
 
 The network parser is text-based: it relies on the bounding boxes of the text elements encoded in the .pdf document to identify patterns indicative of a table.
 
