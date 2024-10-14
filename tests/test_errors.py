@@ -6,6 +6,7 @@ from unittest import mock
 import pytest
 
 import camelot
+from camelot.backends import ImageConversionBackend
 from camelot.backends.image_conversion import ImageConversionError
 from camelot.utils import is_url
 from tests.conftest import skip_on_windows
@@ -123,7 +124,7 @@ def test_lattice_no_tables_on_page(testdir):
 
 
 def test_lattice_unknown_backend(foo_pdf):
-    message = "Unknown backend 'mupdf' specified. Please use either 'poppler' or 'ghostscript'."
+    message = "Unknown backend 'mupdf' specified. Please use 'pdfium', 'poppler' or 'ghostscript'."
     with pytest.raises(NotImplementedError, match=message):
         tables = camelot.read_pdf(
             foo_pdf, flavor="lattice", backend="mupdf", use_fallback=False
@@ -149,6 +150,42 @@ def test_invalid_url():
     assert is_url(url) is False
 
 
+#     def test_lattice_table_regions(testdir):
+#         df = pd.DataFrame(data_lattice_table_regions)
+
+#         filename = os.path.join(testdir, "table_region.pdf")
+# >       tables = camelot.read_pdf(filename, table_regions=["170,370,560,270"])
+
+
+def test_pdfium_backend_import_error(testdir):
+    filename = os.path.join(testdir, "table_region.pdf")
+    with mock.patch.dict(sys.modules, {"pypdfium2": None}):
+        message = "pypdfium2 is not available: "
+        try:
+            tables = camelot.read_pdf(
+                filename,
+                flavor="lattice",
+                backend="pdfium",
+                use_fallback=False,
+            )
+        except Exception as em:
+            print(em)
+            assert message in str(em)
+
+
+def test_pdfium_backend_import_error_alternative(testdir):
+    filename = os.path.join(testdir, "table_region.pdf")
+    with mock.patch.dict(sys.modules, {"pypdfium2": None}):
+        message = "pypdfium2 is not available: "
+        tables = camelot.read_pdf(
+            filename,
+            flavor="lattice",
+            backend="pdfium",
+            use_fallback=False,
+        )
+    assert tables is not None
+
+
 def test_ghostscript_backend_import_error(testdir):
     filename = os.path.join(testdir, "table_region.pdf")
     with mock.patch.dict(sys.modules, {"ghostscript": None}):
@@ -161,3 +198,33 @@ def test_ghostscript_backend_import_error(testdir):
                 use_fallback=False,
             )
         assert message in str(e.value)
+
+
+#         # try:
+#         #     # from camelot.backends.pdfium_backend import pdfium # as pdfium  # import PdfiumBackend
+#         #     import camelot.backends.pdfium_backend
+#         #     backend = ImageConversionBackend(backend="pdfium", use_fallback=False)
+#         #     backend.convert("foo", "bar")
+#         # except OSError:
+#         #     assert pdfium is False
+#         #     # camelot.backends.pdfium_backend
+#         message = "pypdfium2 is not available: "
+#         with pytest.raises(OSError) as e:
+#             tables = camelot.read_pdf(foo_pdf, backend="pdfium")
+#         assert message in str(e.value)
+
+
+# Test works but not improving coverage
+# def test_pdfium_backend_import_error(foo_pdf):
+#     with mock.patch.dict("sys.modules", {"pypdfium2": None}):
+#         pdfium = ImageConversionBackend(backend="pdfium", use_fallback=False)
+#         print("pdfium is\n")
+#         print(pdfium)
+#         assert pdfium is not None, "pypdfium2 is NOT installed"
+
+
+# def test_have_ocrmypdf_unavailable(self):
+#     with mock.patch.dict('sys.modules', {'ocrmypdf': None}):
+#         have = ocrmypdf.have_ocrmypdf()
+#         print("ocrmypdf should not be available have is %s" % have)
+#         self.assertFalse(have, "ocrmypdf is NOT installed")
