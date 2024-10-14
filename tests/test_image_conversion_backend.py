@@ -10,6 +10,7 @@ def patch_backends(monkeypatch):
         {
             "poppler": PopplerBackendError,
             "ghostscript": GhostscriptBackendNoError,
+            "pdfdium": PdfiumBackendError,
         },
         raising=True,
     )
@@ -30,8 +31,13 @@ class GhostscriptBackendNoError:
         pass
 
 
+class PdfiumBackendError:
+    def convert(self, pdf_path, png_path):
+        raise ValueError("Image conversion failed")
+
+
 def test_poppler_backend_error_when_no_use_fallback(patch_backends):
-    backend = ImageConversionBackend(use_fallback=False)
+    backend = ImageConversionBackend(backend="poppler", use_fallback=False)
 
     message = "Image conversion failed with image conversion backend 'poppler'"
     with pytest.raises(ValueError, match=message):
@@ -39,17 +45,21 @@ def test_poppler_backend_error_when_no_use_fallback(patch_backends):
 
 
 def test_ghostscript_backend_when_use_fallback(patch_backends):
-    backend = ImageConversionBackend()
+    backend = ImageConversionBackend(backend="ghostscript")
     backend.convert("foo", "bar")
 
 
 def test_ghostscript_backend_error_when_use_fallback(monkeypatch):
-    backends = {"poppler": PopplerBackendError, "ghostscript": GhostscriptBackendError}
+    backends = {
+        "ghostscript": GhostscriptBackendError,
+        "poppler": PopplerBackendError,
+        "pdfium": PdfiumBackendError,
+    }
 
     monkeypatch.setattr(
         "camelot.backends.image_conversion.BACKENDS", backends, raising=True
     )
-    backend = ImageConversionBackend(backend="poppler")
+    backend = ImageConversionBackend(backend="pdfium")
 
     message = "Image conversion failed with image conversion backend 'ghostscript'"
     with pytest.raises(ValueError, match=message):
