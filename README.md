@@ -3,6 +3,7 @@
 </p>
 
 TEST COMMIT TO SEE IF GH ACTIONS IS BLOCKED
+testmypy
 # pypdf_table_extraction (Camelot): PDF Table Extraction for Humans
 
 [![tests](https://github.com/py-pdf/pypdf_table_extraction/actions/workflows/tests.yml/badge.svg)](https://github.com/py-pdf/pypdf_table_extraction/actions/workflows/tests.yml) [![Documentation Status](https://readthedocs.org/projects/pypdf-table-extraction/badge/?version=latest)](https://pypdf-table-extraction.readthedocs.io/en/latest/)
