@@ -51,13 +51,11 @@ class PDFHandler:
         Whether the parser should store debug information during parsing.
     """
 
-    def __init__(
-        self, filepath: Union[StrByteType, Path], pages="1", password=None, debug=False
-    ):
+    def __init__(self, filepath, pages="1", password=None, debug=False):
         self.debug = debug
         if is_url(filepath):
             filepath = download_url(filepath)
-        self.filepath: Union[StrByteType, Path] = filepath
+        self.filepath: Union[StrByteType, Path] | str = filepath
 
         if isinstance(filepath, str) and not filepath.lower().endswith(".pdf"):
             raise NotImplementedError("File format not supported")
