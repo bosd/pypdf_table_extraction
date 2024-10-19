@@ -198,8 +198,8 @@ def search_header_from_body_bbox(
         The expanded bounding box in the format (left, bottom, right, top).
     """
     new_bbox = body_bbox
-    (left, bottom, right, top) = body_bbox
-    # left, bottom, right, top = body_bbox
+    # (left, bottom, right, top) = body_bbox
+    left, bottom, right, top = body_bbox
     zones: list[list[float]] = []
 
     keep_searching = True
@@ -227,13 +227,13 @@ def search_header_from_body_bbox(
                 # 1: <A1>    <B1>    <C1>    <D1>    <E1>
                 # 2: <A2>    <B2>    <C2>    <D2>    <E2>
                 # if len(zones) > TEXTEDGE_REQUIRED_ELEMENTS:
-                new_bbox = (left, bottom, right, top)
+                # new_bbox = (left, bottom, right, top)
 
                 # At this stage we've identified a plausible row (or the
                 # beginning of one).
                 keep_searching = True
-        return new_bbox
-    # return (left, bottom, right, top)
+        # return new_bbox
+        return (left, bottom, right, top)
     #     else:
     #         break
 
