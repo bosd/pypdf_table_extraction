@@ -907,7 +907,7 @@ def merge_close_lines(ar, line_tol=2):
     return ret
 
 
-def text_strip(text: str, strip: str = "") -> str:
+def text_strip(text, strip=""):
     """Strip any characters in `strip` that are present in `text`.
 
     Parameters
