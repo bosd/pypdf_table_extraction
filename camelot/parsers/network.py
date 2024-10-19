@@ -2,6 +2,9 @@
 
 import copy
 import math
+from typing import Any
+from typing import List
+from typing import Tuple
 
 import numpy as np
 
@@ -75,107 +78,147 @@ def find_closest_tls(bbox, tls):
     }
 
 
-def search_header_from_body_bbox(body_bbox, textlines, col_anchors, max_v_gap):
-    """Expand a bbox vertically up by looking for plausible headers.
+def _find_textlines_above(
+    body_bbox: Tuple[float, float, float, float], textlines: List[Any]
+) -> List[Any]:
+    """Find textlines that are above the bounding box.
+
+    Parameters
+    ----------
+    body_bbox : Tuple[float, float, float, float]
+        The bounding box of the body.
+    textlines : List[Any]
+        A list of textline objects.
+
+    Returns
+    -------
+    List[Any]
+        A list of textlines that are above the bounding box.
+    """
+    left, _, right, top = body_bbox
+    return [
+        textline
+        for textline in textlines
+        if textline.y0 > top and left < (0.5 * (textline.x0 + textline.x1)) < right
+    ]
+
+
+def _extract_zones(
+    all_above: List[Any], max_v_gap: float, top: float
+) -> Tuple[List[List[float]], float]:
+    """Extract zones from the textlines above the body bbox.
+
+    Parameters
+    ----------
+    all_above : List[Any]
+        Textlines that are above the bounding box.
+    max_v_gap : float
+        The maximum vertical gap allowed.
+    top : float
+        The current top boundary.
+
+    Returns
+    -------
+    Tuple[List[List[float]], float]
+        The extracted zones and the new top boundary.
+    """
+    tls_in_new_row = []
+    pushed_up = True
+
+    while pushed_up:
+        pushed_up = False
+        for (
+            textline
+        ) in all_above.copy():  # Copy to avoid modifying the list during iteration
+            if textline.y0 < top:
+                tls_in_new_row.append(textline)
+                all_above.remove(textline)
+                if textline.y1 > top:
+                    top = textline.y1
+                    pushed_up = True
+
+    return [[textline.x0, textline.x1] for textline in tls_in_new_row], top
+
+
+def _merge_zones(zones: List[List[float]]) -> List[List[float]]:
+    """Merge overlapping zones into consolidated zones.
+
+    Parameters
+    ----------
+    zones : List[List[float]]
+        A list of zones defined by their x-coordinates.
+
+    Returns
+    -------
+    List[List[float]]
+        A list of merged zones.
+    """
+    zones.sort(key=lambda z: z[0])
+    merged_zones = []
+
+    for zone in zones:
+        if not merged_zones or merged_zones[-1][1] < zone[0]:
+            merged_zones.append(zone)
+        else:
+            merged_zones[-1][1] = max(merged_zones[-1][1], zone[1])  # Merge the zones
+
+    return merged_zones
+
+
+def search_header_from_body_bbox(
+    body_bbox: Tuple[float, float, float, float],
+    textlines: List[Any],
+    col_anchors: List[float],
+    max_v_gap: float,
+) -> Tuple[float, float, float, float]:
+    """Expand a bounding box (bbox) vertically by looking for plausible headers.
 
     The core algorithm is based on fairly strict alignment of text. It works
-    for the table body, but might fail on tables' headers since they tend to be
-    in a different font, alignment (e.g. vertical), etc.
-    This method evalutes the area above the table body's bbox for
-    characteristics of a table header: close to the top of the body, with cells
-    that fit within the horizontal bounds identified.
+    for the table body but might fail on table headers since they tend to be
+    in a different font, alignment (e.g., vertical), etc. This method evaluates
+    the area above the table body's bbox for characteristics of a table header:
+    close to the top of the body, with cells that fit within the horizontal bounds identified.
+
+    Parameters
+    ----------
+    body_bbox : Tuple[float, float, float, float]
+        The bounding box of the body in the format (left, bottom, right, top).
+    textlines : List[Any]
+        A list of textline objects, each with properties x0, x1, y0, and y1.
+    col_anchors : List[float]
+        A list of x-coordinates representing column anchors.
+    max_v_gap : float
+        The maximum vertical gap allowed to consider a header plausible.
+
+    Returns
+    -------
+    Tuple[float, float, float, float]
+        The expanded bounding box in the format (left, bottom, right, top).
     """
-    new_bbox = body_bbox
-    (left, bottom, right, top) = body_bbox
+    left, bottom, right, top = body_bbox
     zones = []
 
-    keep_searching = True
-    while keep_searching:
-        keep_searching = False
-        # a/ first look for the closest text element above the bbox.
-        # It will be the anchor for a possible new row.
-        closest_above = None
-        all_above = []
-        for textline in textlines:
-            # higher than the table, >50% within its bounds
-            textline_center = 0.5 * (textline.x0 + textline.x1)
-            if textline.y0 > top and left < textline_center < right:
-                all_above.append(textline)
-                if closest_above is None or closest_above.y0 > textline.y0:
-                    closest_above = textline
+    while True:
+        all_above = _find_textlines_above(body_bbox, textlines)
+        closest_above = min(all_above, key=lambda tl: tl.y0, default=None)
 
         if closest_above and closest_above.y0 < top + max_v_gap:
-            # b/ We have a candidate cell that is within the correct
-            # vertical band, and directly above the table. Starting from
-            # this anchor, we list all the textlines within the same row.
-            tls_in_new_row = []
-            top = closest_above.y1
-            pushed_up = True
-            while pushed_up:
-                pushed_up = False
-                # Iterate and extract elements that fit in the row
-                # from our list
-                for i in range(len(all_above) - 1, -1, -1):
-                    textline = all_above[i]
-                    if textline.y0 < top:
-                        # The bottom of this element is within our row
-                        # so we add it.
-                        tls_in_new_row.append(textline)
-                        all_above.pop(i)
-                        if textline.y1 > top:
-                            # If the top of this element raises our row's
-                            # band, we'll need to keep on searching for
-                            # overlapping items
-                            top = textline.y1
-                            pushed_up = True
-
-            # Get the x-ranges for all the textlines, and merge the
-            # x-ranges that overlap
-            zones = zones + list(
-                map(lambda textline: [textline.x0, textline.x1], tls_in_new_row)
-            )
-            zones.sort(key=lambda z: z[0])  # Sort by left coordinate
-            # Starting from the right, if two zones overlap horizontally,
-            # merge them
-            merged_something = True
-            while merged_something:
-                merged_something = False
-                for i in range(len(zones) - 1, 0, -1):
-                    zone_right = zones[i]
-                    zone_left = zones[i - 1]
-                    if zone_left[1] >= zone_right[0]:
-                        zone_left[1] = max(zone_right[1], zone_left[1])
-                        zones.pop(i)
-                        merged_something = True
+            zones, top = _extract_zones(all_above, max_v_gap, closest_above.y1)
+            merged_zones = _merge_zones(zones)
 
             max_spread = max(
-                list(
-                    map(
-                        lambda zone: column_spread(zone[0], zone[1], col_anchors), zones
-                    )
-                )
+                column_spread(zone[0], zone[1], col_anchors) for zone in merged_zones
             )
 
-            # Accept textlines that cross columns boundaries, as long as they
-            # cross less than MAX_COL_SPREAD_IN_HEADER, and half the number of
-            # columns.
-            # This is to avoid picking unrelated paragraphs.
+            # Check if the identified zones cross column boundaries
             if max_spread <= min(
                 MAX_COL_SPREAD_IN_HEADER, math.ceil(len(col_anchors) / 2)
             ):
-                # Combined, the elements we've identified don't cross more
-                # than the authorized number of columns.
-                # We're trying to avoid
-                # 0: <BAD: Added header spans too broad>
-                # 1: <A1>    <B1>    <C1>    <D1>    <E1>
-                # 2: <A2>    <B2>    <C2>    <D2>    <E2>
-                # if len(zones) > TEXTEDGE_REQUIRED_ELEMENTS:
-                new_bbox = (left, bottom, right, top)
+                return (left, bottom, right, top)
+        else:
+            break
 
-                # At this stage we've identified a plausible row (or the
-                # beginning of one).
-                keep_searching = True
-    return new_bbox
+    return body_bbox
 
 
 class AlignmentCounter:
