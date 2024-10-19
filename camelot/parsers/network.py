@@ -1,5 +1,7 @@
 """Implementation of network table parser."""
 
+from __future__ import annotations
+
 import copy
 import math
 from typing import Any
@@ -79,8 +81,8 @@ def find_closest_tls(bbox, tls):
 
 
 def _find_textlines_above(
-    body_bbox: Tuple[float, float, float, float], textlines: List[Any]
-) -> List[Any]:
+    body_bbox: tuple[float, float, float, float], textlines: list[Any]
+) -> list[Any]:
     """Find textlines that are above the bounding box.
 
     Parameters
@@ -104,8 +106,8 @@ def _find_textlines_above(
 
 
 def _extract_zones(
-    all_above: List[Any], max_v_gap: float, top: float
-) -> Tuple[List[List[float]], float]:
+    all_above: list[Any], max_v_gap: float, top: float
+) -> tuple[list[list[float]], float]:
     """Extract zones from the textlines above the body bbox.
 
     Parameters
@@ -140,7 +142,7 @@ def _extract_zones(
     return [[textline.x0, textline.x1] for textline in tls_in_new_row], top
 
 
-def _merge_zones(zones: List[List[float]]) -> List[List[float]]:
+def _merge_zones(zones: list[list[float]]) -> list[list[float]]:
     """Merge overlapping zones into consolidated zones.
 
     Parameters
@@ -154,7 +156,7 @@ def _merge_zones(zones: List[List[float]]) -> List[List[float]]:
         A list of merged zones.
     """
     zones.sort(key=lambda z: z[0])
-    merged_zones = []
+    merged_zones: list[list[float]] = []  # merged_zones: list[<type>] = ...
 
     for zone in zones:
         if not merged_zones or merged_zones[-1][1] < zone[0]:
@@ -166,11 +168,11 @@ def _merge_zones(zones: List[List[float]]) -> List[List[float]]:
 
 
 def search_header_from_body_bbox(
-    body_bbox: Tuple[float, float, float, float],
-    textlines: List[Any],
-    col_anchors: List[float],
+    body_bbox: tuple[float, float, float, float],
+    textlines: list[Any],
+    col_anchors: list[float],
     max_v_gap: float,
-) -> Tuple[float, float, float, float]:
+) -> tuple[float, float, float, float]:
     """Expand a bounding box (bbox) vertically by looking for plausible headers.
 
     The core algorithm is based on fairly strict alignment of text. It works
@@ -195,10 +197,14 @@ def search_header_from_body_bbox(
     Tuple[float, float, float, float]
         The expanded bounding box in the format (left, bottom, right, top).
     """
-    left, bottom, right, top = body_bbox
-    zones = []
+    new_bbox = body_bbox
+    (left, bottom, right, top) = body_bbox
+    # left, bottom, right, top = body_bbox
+    zones: list[list[float]] = []
 
-    while True:
+    keep_searching = True
+    while keep_searching:
+        keep_searching = False
         all_above = _find_textlines_above(body_bbox, textlines)
         closest_above = min(all_above, key=lambda tl: tl.y0, default=None)
 
@@ -214,11 +220,24 @@ def search_header_from_body_bbox(
             if max_spread <= min(
                 MAX_COL_SPREAD_IN_HEADER, math.ceil(len(col_anchors) / 2)
             ):
-                return (left, bottom, right, top)
-        else:
-            break
+                # Combined, the elements we've identified don't cross more
+                # than the authorized number of columns.
+                # We're trying to avoid
+                # 0: <BAD: Added header spans too broad>
+                # 1: <A1>    <B1>    <C1>    <D1>    <E1>
+                # 2: <A2>    <B2>    <C2>    <D2>    <E2>
+                # if len(zones) > TEXTEDGE_REQUIRED_ELEMENTS:
+                new_bbox = (left, bottom, right, top)
 
-    return body_bbox
+                # At this stage we've identified a plausible row (or the
+                # beginning of one).
+                keep_searching = True
+        return new_bbox
+    # return (left, bottom, right, top)
+    #     else:
+    #         break
+
+    # return body_bbox
 
 
 class AlignmentCounter:
@@ -590,7 +609,7 @@ class Network(TextBaseParser):
         row_tol=2,
         column_tol=0,
         debug=False,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             "network",
