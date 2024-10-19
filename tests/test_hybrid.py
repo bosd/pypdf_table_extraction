@@ -65,6 +65,7 @@ def test_hybrid_table_regions(testdir):
     tables = camelot.read_pdf(
         filename, flavor="hybrid", table_regions=["320,335,573,505"]
     )
+    print(tables[0].df)  # bosd temp
     assert_frame_equal(df, tables[0].df)
 
 
