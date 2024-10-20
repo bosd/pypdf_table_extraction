@@ -1174,28 +1174,27 @@ def _group_and_process_chars(
 def get_table_index(
     table, t, direction, split_text=False, flag_size=False, strip_text=""
 ):
-    """Get indices of the table cell.
+    """
+    Get indices of the table cell.
 
-    Get the index of a table cell where given text object lies by
+    Get the index of a table cell where a given text object lies by
     comparing their y and x-coordinates.
 
     Parameters
     ----------
     table : camelot.core.Table
+        The table structure containing rows and columns.
     t : object
         PDFMiner LTTextLine object.
     direction : string
         Direction of the PDFMiner LTTextLine object.
     split_text : bool, optional (default: False)
-        Whether or not to split a text line if it spans across
-        multiple cells.
+        Whether or not to split a text line if it spans across multiple cells.
     flag_size : bool, optional (default: False)
-        Whether or not to highlight a substring using <s></s>
-        if its size is different from rest of the string. (Useful for
-        super and subscripts)
+        Whether or not to highlight a substring using <s></s> if its size
+        is different from the rest of the string.
     strip_text : str, optional (default: '')
-        Characters that should be stripped from a string before
-        assigning it to a cell.
+        Characters that should be stripped from a string before assigning it to a cell.
 
     Returns
     -------
@@ -1203,75 +1202,110 @@ def get_table_index(
         List of tuples of the form (r_idx, c_idx, text) where r_idx
         and c_idx are row and column indices.
     error : float
-        Assignment error, percentage of text area that lies outside
-        a cell.
-        +-------+
-        |       |
-        |   [Text bounding box]
-        |       |
-        +-------+
-
+        Assignment error, percentage of text area that lies outside a cell.
     """
-    r_idx, c_idx = [-1] * 2
-    for r in range(len(table.rows)):
-        if (t.y0 + t.y1) / 2.0 < table.rows[r][0] and (t.y0 + t.y1) / 2.0 > table.rows[
-            r
-        ][1]:
-            lt_col_overlap = []
-            for c in table.cols:
-                if c[0] <= t.x1 and c[1] >= t.x0:
-                    left = t.x0 if c[0] <= t.x0 else c[0]
-                    right = t.x1 if c[1] >= t.x1 else c[1]
-                    lt_col_overlap.append(abs(left - right) / abs(c[0] - c[1]))
-                else:
-                    lt_col_overlap.append(-1)
-            if len(list(filter(lambda x: x != -1, lt_col_overlap))) == 0:
-                text = t.get_text().strip("\n")
-                text_range = (t.x0, t.x1)
-                col_range = (table.cols[0][0], table.cols[-1][1])
-                warnings.warn(
-                    f"{text} {text_range} does not lie in column range {col_range}"
-                )
-            r_idx = r
-            c_idx = lt_col_overlap.index(max(lt_col_overlap))
-            break
+    r_idx, c_idx = find_row_index(table, t)
+    if r_idx == -1:
+        return [], 0.0  # No valid row found
 
-    # error calculation
-    y0_offset, y1_offset, x0_offset, x1_offset = [0] * 4
-    if t.y0 > table.rows[r_idx][0]:
-        y0_offset = abs(t.y0 - table.rows[r_idx][0])
-    if t.y1 < table.rows[r_idx][1]:
-        y1_offset = abs(t.y1 - table.rows[r_idx][1])
-    if t.x0 < table.cols[c_idx][0]:
-        x0_offset = abs(t.x0 - table.cols[c_idx][0])
-    if t.x1 > table.cols[c_idx][1]:
-        x1_offset = abs(t.x1 - table.cols[c_idx][1])
-    x = 1.0 if abs(t.x0 - t.x1) == 0.0 else abs(t.x0 - t.x1)
-    y = 1.0 if abs(t.y0 - t.y1) == 0.0 else abs(t.y0 - t.y1)
-    charea = x * y
-    error = ((x * (y0_offset + y1_offset)) + (y * (x0_offset + x1_offset))) / charea
+    lt_col_overlap = calculate_column_overlap(table, t, r_idx)
+    c_idx = lt_col_overlap.index(max(lt_col_overlap))
+
+    error = calculate_assignment_error(t, table, r_idx, c_idx)
 
     if split_text:
         return (
-            split_textline(
-                table, t, direction, flag_size=flag_size, strip_text=strip_text
-            ),
+            split_textline(table, t, direction, flag_size=flag_size, strip_text=strip_text),
             error,
         )
+    
+    text = t.get_text().strip("\n")
+    if flag_size:
+        return [(r_idx, c_idx, flag_font_size(t._objs, direction, strip_text=strip_text))], error
     else:
-        if flag_size:
-            return (
-                [
-                    (
-                        r_idx,
-                        c_idx,
-                        flag_font_size(t._objs, direction, strip_text=strip_text),
-                    )
-                ],
-                error,
-            )
+        return [(r_idx, c_idx, text_strip(text, strip_text))], error
+
+def find_row_index(table, t):
+    """
+    Find the row index for the given text object.
+
+    Parameters
+    ----------
+    table : camelot.core.Table
+        The table structure containing rows and columns.
+    t : object
+        PDFMiner LTTextLine object.
+
+    Returns
+    -------
+    int
+        The row index where the text object is located or -1 if not found.
+    """
+    mid_y = (t.y0 + t.y1) / 2.0
+    for r in range(len(table.rows)):
+        if mid_y < table.rows[r][0] and mid_y > table.rows[r][1]:
+            return r
+    return -1  # No valid row found
+
+def calculate_column_overlap(table, t, r_idx):
+    """
+    Calculate column overlap for the given row index and text object.
+
+    Parameters
+    ----------
+    table : camelot.core.Table
+        The table structure containing rows and columns.
+    t : object
+        PDFMiner LTTextLine object.
+    r_idx : int
+        Row index where the text object is located.
+
+    Returns
+    -------
+    list
+        List of column overlap values.
+    """
+    lt_col_overlap = []
+    for c in table.cols:
+        if c[0] <= t.x1 and c[1] >= t.x0:
+            left = max(t.x0, c[0])
+            right = min(t.x1, c[1])
+            overlap = abs(left - right) / abs(c[0] - c[1])
+            lt_col_overlap.append(overlap)
         else:
-            return [(r_idx, c_idx, text_strip(t.get_text(), strip_text))], error
+            lt_col_overlap.append(-1)
+    return lt_col_overlap
+
+def calculate_assignment_error(t, table, r_idx, c_idx):
+    """
+    Calculate the assignment error for the given text object.
+
+    Parameters
+    ----------
+    t : object
+        PDFMiner LTTextLine object.
+    table : camelot.core.Table
+        The table structure containing rows and columns.
+    r_idx : int
+        Row index where the text object is located.
+    c_idx : int
+        Column index where the text object is located.
+
+    Returns
+    -------
+    float
+        The calculated assignment error.
+    """
+    y0_offset = max(0, t.y0 - table.rows[r_idx][0])
+    y1_offset = max(0, table.rows[r_idx][1] - t.y1)
+    x0_offset = max(0, t.x0 - table.cols[c_idx][0])
+    x1_offset = max(0, t.x1 - table.cols[c_idx][1])
+    
+    x = max(1.0, abs(t.x0 - t.x1))
+    y = max(1.0, abs(t.y0 - t.y1))
+    charea = x * y
+    error = ((x * (y0_offset + y1_offset)) + (y * (x0_offset + x1_offset))) / charea
+    return error
 
 
 def compute_accuracy(error_weights):
