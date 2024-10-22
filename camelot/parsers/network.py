@@ -736,31 +736,120 @@ class Network(TextBaseParser):
 
     def _generate_table_bbox(self):
         user_provided_bboxes = self._get_user_provided_bboxes()
+        # Take all the textlines that are not just spaces
         all_textlines = self._get_filtered_textlines()
+
         textlines_processed = {}
         self.table_bbox_parses = {}
-
-        parse_details_network_searches, parse_details_bbox_searches = (
-            self._initialize_parse_details()
-        )
+        if self.parse_details is not None:
+            parse_details_network_searches = []
+            self.parse_details["network_searches"] = parse_details_network_searches
+            parse_details_bbox_searches = []
+            self.parse_details["bbox_searches"] = parse_details_bbox_searches
+            self.parse_details["col_searches"] = []
+        else:
+            parse_details_network_searches = None
+            parse_details_bbox_searches = None
 
         while True:
-            bbox_body = self._find_bbox_body(
-                user_provided_bboxes,
-                all_textlines,
-                parse_details_network_searches,
-                parse_details_bbox_searches,
-            )
+
+            # Find a bbox: either pulling from the user's or from the network
+            # algorithm.
+
+            # First look for the body of the table
+            bbox_body = None
+        
+            if user_provided_bboxes:
+                return user_provided_bboxes.pop() if user_provided_bboxes else None
+            else:
+                text_network = TextNetworks()
+                text_network.generate(all_textlines)
+                text_network.remove_unconnected_edges()
+                gaps_hv = text_network.compute_plausible_gaps()
+                if gaps_hv is None:
+                    return None
+
+                edge_tol_hv = (
+                    gaps_hv[0],
+                    gaps_hv[1] if self.edge_tol is None else self.edge_tol,
+                )
+                bbox_body = self._find_bbox_body(
+                    # user_provided_bboxes,
+                    edge_tol_hv,
+                    text_network,
+                    # all_textlines,
+                    parse_details_network_searches,
+                    parse_details_bbox_searches,
+                )
+
+            # # First look for the body of the table
+            # bbox_body = None
+            # if user_provided_bboxes is not None:
+            #     if len(user_provided_bboxes) > 0:
+            #         bbox_body = user_provided_bboxes.pop()
+            # else:
+            #     text_network = TextNetworks()
+            #     text_network.generate(textlines)
+            #     text_network.remove_unconnected_edges()
+            #     gaps_hv = text_network.compute_plausible_gaps()
+            #     if gaps_hv is None:
+            #         break
+            #         # return None
+            #     # edge_tol instructions override the calculated vertical gap
+            #     edge_tol_hv = (
+            #         gaps_hv[0],
+            #         gaps_hv[1] if self.edge_tol is None else self.edge_tol,
+            #     )
+            #     bbox_body = text_network.search_table_body(
+            #         edge_tol_hv, parse_details=parse_details_bbox_searches
+            #     )
+
+            #     if parse_details_network_searches is not None:
+            #         # Preserve the current edge calculation for debugging
+            #         parse_details_network_searches.append(copy.deepcopy(text_network))
+
             if bbox_body is None:
                 break
 
+            # Get all the textlines that overlap with the box, compute
+            # columns
+            # tls_in_bbox = textlines_overlapping_bbox(bbox_body, textlines)
             tls_in_bbox = textlines_overlapping_bbox(bbox_body, all_textlines)
             cols_boundaries = find_columns_boundaries(tls_in_bbox)
             cols_anchors = boundaries_to_split_lines(cols_boundaries)
 
-            bbox_full = self._find_full_bbox(
-                user_provided_bboxes, tls_in_bbox, cols_anchors
-            )
+            # Unless the user gave us strict bbox_body, try to find a header
+            # above the body to build the full bbox.
+            if user_provided_bboxes is not None:
+                bbox_full = bbox_body
+            else:
+                # Expand the text box to fully contain the tls we found
+                bbox_body = bbox_from_textlines(tls_in_bbox)
+            # # Apply heuristic to salvage headers
+            # return search_header_from_body_bbox(
+            #     bbox_body, tls_in_bbox, cols_anchors, gaps_hv[1]
+            # )
+
+                # Apply a heuristic to salvage headers which formatting might
+                # be off compared to the rest of the table.
+                bbox_full = search_header_from_body_bbox(
+                    bbox_body, tls_in_bbox, cols_anchors, gaps_hv[1]
+                )
+            # return search_header_from_body_bbox(
+            #     bbox_body, tls_in_bbox, cols_anchors, gaps_hv[1]
+            # )
+
+            # bbox_full = self._find_full_bbox(
+            #     user_provided_bboxes, tls_in_bbox, cols_anchors
+            # )
+
+            # Unless the user gave us strict bbox_body, try to find a header
+            # above the body to build the full bbox.
+            # if user_provided_bboxes is not None:
+            #     bbox_full = bbox_body
+            # else:
+            #     # Expand the text box to fully contain the tls we found
+            #     bbox_body = bbox_from_textlines(tls_in_bbox)
 
             table_parse = {
                 "bbox_body": bbox_body,
@@ -773,9 +862,43 @@ class Network(TextBaseParser):
             if self.parse_details is not None:
                 self.parse_details["col_searches"].append(table_parse)
 
+            # Remember what textlines we processed, and repeat
+
             self._mark_processed_textlines(
                 tls_in_bbox, textlines_processed, all_textlines
             )
+
+    def _find_bbox_body(
+        self,
+        # user_provided_bboxes,
+        edge_tol_hv,
+        text_network,
+        parse_details_network_searches,
+        parse_details_bbox_searches,
+    ):
+
+        # if user_provided_bboxes:
+        #     return user_provided_bboxes.pop() if user_provided_bboxes else None
+        # else:
+        # text_network = TextNetworks()
+        # text_network.generate(textlines)
+        # text_network.remove_unconnected_edges()
+        # gaps_hv = text_network.compute_plausible_gaps()
+        # if gaps_hv is None:
+        #     return None, None
+
+        # edge_tol_hv = (
+        #     gaps_hv[0],
+        #     gaps_hv[1] if self.edge_tol is None else self.edge_tol,
+        # )
+        bbox_body = text_network.search_table_body(
+            edge_tol_hv, parse_details=parse_details_bbox_searches
+        )
+
+        if parse_details_network_searches is not None:
+            parse_details_network_searches.append(copy.deepcopy(text_network))
+
+            return bbox_body
 
     def _get_user_provided_bboxes(self):
         if self.table_areas is not None:
@@ -790,57 +913,6 @@ class Network(TextBaseParser):
         ]
         return self._apply_regions_filter(all_textlines)
 
-    def _initialize_parse_details(self):
-        if self.parse_details is not None:
-            self.parse_details["network_searches"] = []
-            self.parse_details["bbox_searches"] = []
-            self.parse_details["col_searches"] = []
-            return (
-                self.parse_details["network_searches"],
-                self.parse_details["bbox_searches"],
-            )
-        return None, None
-
-    def _find_bbox_body(
-        self,
-        user_provided_bboxes,
-        textlines,
-        parse_details_network_searches,
-        parse_details_bbox_searches,
-    ):
-        if user_provided_bboxes:
-            return user_provided_bboxes.pop() if user_provided_bboxes else None
-        else:
-            text_network = TextNetworks()
-            text_network.generate(textlines)
-            text_network.remove_unconnected_edges()
-            gaps_hv = text_network.compute_plausible_gaps()
-            if gaps_hv is None:
-                return None
-
-            edge_tol_hv = (
-                gaps_hv[0],
-                gaps_hv[1] if self.edge_tol is None else self.edge_tol,
-            )
-            bbox_body = text_network.search_table_body(
-                edge_tol_hv, parse_details=parse_details_bbox_searches
-            )
-
-            if parse_details_network_searches is not None:
-                parse_details_network_searches.append(copy.deepcopy(text_network))
-
-            return bbox_body
-
-    def _find_full_bbox(self, user_provided_bboxes, tls_in_bbox, cols_anchors):
-        if user_provided_bboxes is not None:
-            return tls_in_bbox  # Assuming bbox_body is the full bbox here as per the logic.
-        else:
-            bbox_body = bbox_from_textlines(tls_in_bbox)
-            # Apply heuristic to salvage headers
-            return search_header_from_body_bbox(
-                bbox_body, tls_in_bbox, cols_anchors, gaps_hv[1]
-            )
-
     def _mark_processed_textlines(
         self, tls_in_bbox, textlines_processed, all_textlines
     ):
@@ -851,7 +923,7 @@ class Network(TextBaseParser):
             for textline in all_textlines
             if textline not in textlines_processed
         ]
-
+    
     def _generate_columns_and_rows(self, bbox, user_cols):
         # select elements which lie within table_bbox
         self.t_bbox = text_in_bbox_per_axis(
