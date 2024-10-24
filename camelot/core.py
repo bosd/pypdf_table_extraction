@@ -661,18 +661,29 @@ class Table:
         self._set_horizontal_edges(horizontal, joint_tol)
         return self
 
+    def _find_close_point(self, coords, coord, joint_tol):
+        for i, t in enumerate(coords):
+            if math.isclose(coord, t[0], abs_tol=joint_tol):
+                return i
+        return None
+
     def _set_vertical_edges(self, vertical, joint_tol):
         for v in vertical:
             start = self._find_close_point(self.rows, v[3], joint_tol)
             if start is None:
                 continue
-            end = self._find_close_point(self.rows, v[1], joint_tol) or len(self.rows)
-            i = self._find_close_point(self.cols, v[0], joint_tol) or (len(self.cols) - 1)
+            end = self._find_close_point(self.rows, v[1], joint_tol)
+            if end is None:
+                end = len(self.rows)
 
+            i = self._find_close_point(self.cols, v[0], joint_tol)
+            if i is None:  # only right edge
+                i = len(self.cols) - 1
             self._update_vertical_edges(start, end, i)
 
     def _update_vertical_edges(self, start, end, index):
-        if index == len(self.cols) - 1:  # only right edge
+        if index is None:  # only right edge
+            index = len(self.cols) - 1
             for j in range(start, end):
                 self.cells[j][index].right = True
         elif index == 0:  # only left edge
@@ -688,13 +699,17 @@ class Table:
             start = self._find_close_point(self.cols, h[0], joint_tol)
             if start is None:
                 continue
-            end = self._find_close_point(self.cols, h[2], joint_tol) or len(self.cols)
-            i = self._find_close_point(self.rows, h[1], joint_tol) or (len(self.rows) - 1)
-
+            end = self._find_close_point(self.cols, h[2], joint_tol)
+            if end is None:
+                end = len(self.cols)
+            i = self._find_close_point(self.rows, h[1], joint_tol)
+            if i is None:  # only bottom edge
+                i = len(self.rows) - 1
             self._update_horizontal_edges(start, end, i)
 
     def _update_horizontal_edges(self, start, end, index):
-        if index == len(self.rows) - 1:  # only bottom edge
+        if index is None:  # only bottom edge
+            index = len(self.rows) - 1
             for j in range(start, end):
                 self.cells[index][j].bottom = True
         elif index == 0:  # only top edge
@@ -704,12 +719,6 @@ class Table:
             for j in range(start, end):
                 self.cells[index][j].top = True
                 self.cells[index - 1][j].bottom = True
-
-    def _find_close_point(self, coords, coord, joint_tol):
-        for i, t in enumerate(coords):
-            if math.isclose(coord, t[0], abs_tol=joint_tol):
-                return i
-        return None
 
     def set_border(self):
         """Sets table border edges to True."""
