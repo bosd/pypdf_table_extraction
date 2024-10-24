@@ -669,13 +669,14 @@ class Table:
 
     def _set_vertical_edges(self, vertical, joint_tol):
         for v in vertical:
+            # find closest x coord
+            # iterate over y coords and find closest start and end points
             start = self._find_close_point(self.rows, v[3], joint_tol)
             if start is None:
                 continue
             end = self._find_close_point(self.rows, v[1], joint_tol)
             if end is None:
                 end = len(self.rows)
-
             i = self._find_close_point(self.cols, v[0], joint_tol)
             if i is None:  # only right edge
                 i = len(self.cols) - 1
@@ -696,6 +697,8 @@ class Table:
 
     def _set_horizontal_edges(self, horizontal, joint_tol):
         for h in horizontal:
+            # find closest y coord
+            # iterate over x coords and find closest start and end points
             start = self._find_close_point(self.cols, h[0], joint_tol)
             if start is None:
                 continue
