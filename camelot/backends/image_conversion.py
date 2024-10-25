@@ -22,7 +22,7 @@ class ImageConversionError(ValueError):  # noqa D101
 class ImageConversionBackend:
     """Classes the ImageConversionBackend backend."""
 
-    def __init__(self, backend: str = "poppler", use_fallback: bool = True) -> None:
+    def __init__(self, backend: str | object = "poppler", use_fallback: bool = True) -> None:
         """Initialize the conversion backend .
 
         Parameters
