@@ -24,6 +24,7 @@ class PdfiumBackend(ConversionBackend):
     def installed(self) -> bool:  # noqa D102
         if not PDFIUM_EXC:
             return True
+        return False
 
     def convert(self, pdf_path: str, png_path: str, resolution: int = 300) -> None:
         """Convert PDF to png.
