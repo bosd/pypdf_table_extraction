@@ -1,8 +1,9 @@
 """Classes and functions for the ImageConversionBackend backends."""
 
+from typing import Any
 from typing import Dict
 from typing import List
-from typing import Type, Any
+from typing import Type
 
 from .base import ConversionBackend
 from .ghostscript_backend import GhostscriptBackend
@@ -55,7 +56,7 @@ class ImageConversionBackend:
         if isinstance(backend, str):
             if backend not in BACKENDS.keys():
                 raise NotImplementedError(
-                    f"Unknown backend {backend!r} specified. Please use either 'poppler' or 'ghostscript'."
+                    f"Unknown backend {backend!r} specified. Please use 'pdfium', 'poppler' or 'ghostscript'."
                 )
 
             return BACKENDS[backend]()

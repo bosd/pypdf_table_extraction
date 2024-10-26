@@ -117,7 +117,7 @@ def test_pages_pdfium():
     assert repr(tables[0]) == "<Table shape=(7, 7)>"
     assert repr(tables[0].cells[0][0]) == "<Cell x1=121 y1=218 x2=165 y2=234>"
 
-    
+
 @skip_on_windows
 def test_url_ghostscript_custom_backend(testdir):
     url = "https://pypdf-table-extraction.readthedocs.io/en/latest/_static/pdf/foo.pdf"
