@@ -160,7 +160,7 @@ def mypy(session: Session) -> None:
 base_requires = [
     "ghostscript>=0.7",
     "opencv-python-headless>=3.4.2.17",
-    "pypdfium2>=4,<5",
+    # "pypdfium2>=4,<5",
 ]
 
 plot_requires = [

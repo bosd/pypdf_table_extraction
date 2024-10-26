@@ -20,6 +20,7 @@ def read_pdf(
     parallel=False,
     layout_kwargs=None,
     debug=False,
+    # use_fallback=True,
     **kwargs
 ):
     """Read PDF and return extracted tables.
