@@ -359,6 +359,7 @@ class TextNetworks(TextAlignments):
         # For each textline, dictionary "alignment type" to
         # "number of textlines aligned"
         self._textline_to_alignments = {}
+        self._recursion_stack = []
 
     def _update_alignment(self, alignment, coord, textline):
         alignment.register_aligned_textline(textline, coord)
@@ -422,13 +423,11 @@ class TextNetworks(TextAlignments):
 
     def most_connected_textline(self):
         """Retrieve the textline that is most connected."""
-        # Check if we are already computing the most connected textline
-        if getattr(self, "_is_recomputing_most_connected", False):
+        if "most_connected_textline" in self._recursion_stack:
             return None  # Prevent recursive calls
-        self._is_recomputing_most_connected = True  # Set the flag to true
+        self._recursion_stack.append("most_connected_textline")
 
         try:
-            # Find the textline with the highest alignment score
             return max(
                 self._textline_to_alignments.keys(),
                 key=lambda textline: (
@@ -439,16 +438,13 @@ class TextNetworks(TextAlignments):
                 default=None,
             )
         finally:
-            self._is_recomputing_most_connected = (
-                False  # Reset the flag after computation
-            )
+            self._recursion_stack.remove("most_connected_textline")  # Reset the stack
 
     def compute_plausible_gaps(self):
         """Evaluate plausible gaps between cells."""
-        # Check if we are already computing gaps
-        if getattr(self, "_is_computing_gaps", False):
+        if "compute_plausible_gaps" in self._recursion_stack:
             return None  # Prevent recursive calls
-        self._is_computing_gaps = True  # Set the flag to true
+        self._recursion_stack.append("compute_plausible_gaps")
 
         try:
             most_aligned_tl = self.most_connected_textline()
@@ -492,7 +488,7 @@ class TextNetworks(TextAlignments):
 
             return gaps_hv
         finally:
-            self._is_computing_gaps = False  # Reset the flag after computation
+            self._recursion_stack.remove("compute_plausible_gaps")  # Reset the stack
 
     def search_table_body(
         self,
