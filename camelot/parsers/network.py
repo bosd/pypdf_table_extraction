@@ -442,7 +442,7 @@ class TextNetworks(TextAlignments):
     def compute_plausible_gaps(self):
         """Evaluate plausible gaps between cells."""
         # Reset the call counter for each computation
-        self.most_connected_call_count = 0
+        # self.most_connected_call_count = 0
 
         while True:
             if self.most_connected_call_count >= self.max_most_connected_calls:
