@@ -360,6 +360,8 @@ class TextNetworks(TextAlignments):
         # "number of textlines aligned"
         self._textline_to_alignments = {}
         self._recursion_stack = []
+        self.max_most_connected_calls = 5  # Set a limit for calls
+        self.most_connected_call_count = 0  # Counter for calls made
 
     def _update_alignment(self, alignment, coord, textline):
         alignment.register_aligned_textline(textline, coord)
@@ -423,30 +425,30 @@ class TextNetworks(TextAlignments):
 
     def most_connected_textline(self):
         """Retrieve the textline that is most connected."""
-        if "most_connected_textline" in self._recursion_stack:
-            return None  # Prevent recursive calls
-        self._recursion_stack.append("most_connected_textline")
+        # Increment the call counter
+        self.most_connected_call_count += 1
 
-        try:
-            return max(
-                self._textline_to_alignments.keys(),
-                key=lambda textline: (
-                    self._textline_to_alignments[textline].alignment_score(),
-                    -textline.y0,
-                    -textline.x0,
-                ),
-                default=None,
-            )
-        finally:
-            self._recursion_stack.remove("most_connected_textline")  # Reset the stack
+        # Find the textline with the highest alignment score, with a tie break
+        return max(
+            self._textline_to_alignments.keys(),
+            key=lambda textline: (
+                self._textline_to_alignments[textline].alignment_score(),
+                -textline.y0,
+                -textline.x0,
+            ),
+            default=None,
+        )
 
     def compute_plausible_gaps(self):
         """Evaluate plausible gaps between cells."""
-        if "compute_plausible_gaps" in self._recursion_stack:
-            return None  # Prevent recursive calls
-        self._recursion_stack.append("compute_plausible_gaps")
+        # Reset the call counter for each computation
+        self.most_connected_call_count = 0
 
-        try:
+        while True:
+            if self.most_connected_call_count >= self.max_most_connected_calls:
+                print("Reached the maximum number of calls to most_connected_textline.")
+                return None  # Exit if the limit is reached
+
             most_aligned_tl = self.most_connected_textline()
             if most_aligned_tl is None:
                 return None
@@ -487,8 +489,6 @@ class TextNetworks(TextAlignments):
             )
 
             return gaps_hv
-        finally:
-            self._recursion_stack.remove("compute_plausible_gaps")  # Reset the stack
 
     def search_table_body(
         self,
