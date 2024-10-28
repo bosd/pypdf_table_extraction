@@ -360,7 +360,7 @@ class TextNetworks(TextAlignments):
         # "number of textlines aligned"
         self._textline_to_alignments = {}
         self._recursion_stack = []
-        self.max_most_connected_calls = 5  # Set a limit for calls
+        self.max_most_connected_calls = 1  # Set a limit for calls
         self.most_connected_call_count = 0  # Counter for calls made
 
     def _update_alignment(self, alignment, coord, textline):
