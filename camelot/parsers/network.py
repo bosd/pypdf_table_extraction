@@ -367,7 +367,7 @@ class TextNetworks(TextAlignments):
         """Add all textlines to our network repository to identify alignments."""
         # Identify all the alignments
         for textline in textlines:
-            if len(textline.get_text().strip()) > 0:
+            if len(textline.get_text().strip()) >= 0:  # bosd hack
                 self._register_textline(textline)
 
     def _compute_alignment_counts(self):
