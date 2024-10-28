@@ -439,63 +439,70 @@ class TextNetworks(TextAlignments):
     def compute_plausible_gaps(self):
         """Evaluate plausible gaps between cells.
 
-        Both horizontally and vertically
-        based on the textlines aligned with the most connected textline.
+        Both horizontally and vertically based on the textlines aligned with the most connected textline.
 
         Returns
         -------
         gaps_hv : tuple
             (horizontal_gap, vertical_gap) in pdf coordinate space.
-
         """
-        # Determine the textline that has the most combined
-        # alignments across horizontal and vertical axis.
-        most_aligned_tl = self.most_connected_textline()
-        if most_aligned_tl is None:
-            return None
+        # Use an attribute to track if we are already computing gaps
+        if getattr(self, "_is_computing_gaps", False):
+            return None  # Prevent re-entrance
+        self._is_computing_gaps = True  # Set the flag to true
 
-        # Retrieve the list of textlines it's aligned with, across both axes
-        best_alignment = self._textline_to_alignments.get(most_aligned_tl)
-        if best_alignment is None:
-            return None
+        try:
+            # Determine the textline that has the most combined
+            # alignments across horizontal and vertical axis.
+            most_aligned_tl = self.most_connected_textline()
+            if most_aligned_tl is None:
+                return None
 
-        __, ref_h_textlines = best_alignment.max_h()
-        __, ref_v_textlines = best_alignment.max_v()
+            # Retrieve the list of textlines it's aligned with, across both axes
+            best_alignment = self._textline_to_alignments.get(most_aligned_tl)
+            if best_alignment is None:
+                return None
 
-        # Ensure we have enough textlines for calculations
-        if len(ref_v_textlines) <= 1 or len(ref_h_textlines) <= 1:
-            return None
+            __, ref_h_textlines = best_alignment.max_h()
+            __, ref_v_textlines = best_alignment.max_v()
 
-        # Sort textlines based on their positions
-        h_textlines = sorted(
-            ref_h_textlines, key=lambda textline: textline.x0, reverse=True
-        )
-        v_textlines = sorted(
-            ref_v_textlines, key=lambda textline: textline.y0, reverse=True
-        )
+            # Ensure we have enough textlines for calculations
+            if len(ref_v_textlines) <= 1 or len(ref_h_textlines) <= 1:
+                return None
 
-        # Calculate gaps between textlines
-        h_gaps = [
-            h_textlines[i - 1].x0 - h_textlines[i].x0
-            for i in range(1, len(h_textlines))
-        ]
-        v_gaps = [
-            v_textlines[i - 1].y0 - v_textlines[i].y0
-            for i in range(1, len(v_textlines))
-        ]
+            # Sort textlines based on their positions
+            h_textlines = sorted(
+                ref_h_textlines, key=lambda textline: textline.x0, reverse=True
+            )
+            v_textlines = sorted(
+                ref_v_textlines, key=lambda textline: textline.y0, reverse=True
+            )
 
-        # If no gaps are found, return None
-        if not h_gaps or not v_gaps:
-            return None
+            # Calculate gaps between textlines
+            h_gaps = [
+                h_textlines[i - 1].x0 - h_textlines[i].x0
+                for i in range(1, len(h_textlines))
+            ]
+            v_gaps = [
+                v_textlines[i - 1].y0 - v_textlines[i].y0
+                for i in range(1, len(v_textlines))
+            ]
 
-        # Calculate the 75th percentile gaps
-        percentile = 75
-        gaps_hv = (
-            2.0 * np.percentile(h_gaps, percentile),
-            2.0 * np.percentile(v_gaps, percentile),
-        )
+            # If no gaps are found, return None
+            if not h_gaps or not v_gaps:
+                return None
 
-        return gaps_hv
+            # Calculate the 75th percentile gaps
+            percentile = 75
+            gaps_hv = (
+                2.0 * np.percentile(h_gaps, percentile),
+                2.0 * np.percentile(v_gaps, percentile),
+            )
+
+            return gaps_hv
+
+        finally:
+            self._is_computing_gaps = False  # Reset the flag after computation
 
     def search_table_body(
         self,
