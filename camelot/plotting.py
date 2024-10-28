@@ -294,8 +294,8 @@ class PlotMethods:
             )
         )
 
-        if not _for_lattice:
-            extend_axe_lim(ax, table._bbox)
+        # if not _for_lattice:
+        #     extend_axe_lim(ax, table._bbox)
         return ax.get_figure()
 
     @staticmethod
