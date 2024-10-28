@@ -402,7 +402,7 @@ class TextNetworks(TextAlignments):
                             or alignments.max_v_count() <= 1
                         ):
                             del text_alignment.textlines[i]
-                            removed_singletons = False # bosd hack
+                            removed_singletons = True
             self._textline_to_alignments = {}
             self._compute_alignment_counts()
 
