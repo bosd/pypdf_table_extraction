@@ -422,21 +422,28 @@ class TextNetworks(TextAlignments):
 
     def most_connected_textline(self):
         """Retrieve the textline that is most connected."""
-        # Ensure we are not already in a state of computing gaps
-        if getattr(self, "_is_computing_gaps", False):
+        # Temporarily prevent infinite recursion during this call
+        if getattr(self, "_is_recomputing_most_connected", False):
             return None  # Prevent recursive calls
 
-        # Find the textline with the highest alignment score, with a tie break
-        # to prefer textlines further down in the table.
-        return max(
-            self._textline_to_alignments.keys(),
-            key=lambda textline: (
-                self._textline_to_alignments[textline].alignment_score(),
-                -textline.y0,
-                -textline.x0,
-            ),
-            default=None,
-        )
+        # Set the flag to indicate we are computing the most connected textline
+        self._is_recomputing_most_connected = True
+
+        try:
+            # Find the textline with the highest alignment score, with a tie break
+            # to prefer textlines further down in the table.
+            return max(
+                self._textline_to_alignments.keys(),
+                key=lambda textline: (
+                    self._textline_to_alignments[textline].alignment_score(),
+                    -textline.y0,
+                    -textline.x0,
+                ),
+                default=None,
+            )
+        finally:
+            # Reset the flag after computation
+            self._is_recomputing_most_connected = False
 
     def compute_plausible_gaps(self):
         """Evaluate plausible gaps between cells.
