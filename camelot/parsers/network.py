@@ -422,10 +422,12 @@ class TextNetworks(TextAlignments):
 
     def most_connected_textline(self):
         """Retrieve the textline that is most connected."""
+        # Ensure we are not already in a state of computing gaps
+        if getattr(self, "_is_computing_gaps", False):
+            return None  # Prevent recursive calls
+
         # Find the textline with the highest alignment score, with a tie break
-        # to prefer textlines further down in the table.  Starting the search
-        # from the table's bottom allows the algo to collect data on more cells
-        # before going to the header, typically harder to parse.
+        # to prefer textlines further down in the table.
         return max(
             self._textline_to_alignments.keys(),
             key=lambda textline: (
