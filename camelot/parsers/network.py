@@ -885,9 +885,11 @@ class Network(TextBaseParser):
         else:
             bbox_body_from_tls = bbox_from_textlines(tls_in_bbox)
             if bbox_body_from_tls is not None:
-                return search_header_from_body_bbox(
-                    bbox_body_from_tls, textlines, cols_anchors, gaps_hv[1]
-                )
+                # return search_header_from_body_bbox(
+                #     bbox_body_from_tls, textlines, cols_anchors, gaps_hv[1]
+                # )
+                # bosd temp hack to check if it still hangs
+                return bbox_body_from_tls
         return bbox_body
 
     def _get_filtered_textlines(self):
