@@ -834,6 +834,8 @@ class Network(TextBaseParser):
             else:
                 # Expand the text box to fully contain the tls we found
                 bbox_body = bbox_from_textlines(tls_in_bbox)
+                if bbox_body is None:
+                    break
 
                 # Apply a heuristic to salvage headers which formatting might
                 # be off compared to the rest of the table.
