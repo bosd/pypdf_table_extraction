@@ -469,16 +469,14 @@ class TextNetworks(TextAlignments):
                 return None  # Exit if the limit is reached
 
             # self.most_aligned_tl = self.most_connected_textline()
-            # if self.most_aligned_tl is None:
-            # return None
+            if self.most_aligned_tl is None:
+                return None
 
             # the line below could also be problematic  # bosd
             # best_alignment = self._textline_to_alignments.get(self.most_aligned_tl)
             best_alignment = self._textline_to_alignments.get(
                 self.most_connected_textline()
             )  # bosd hack
-            # 'LTTextLineHorizontal' object has no attribute 'max_h'
-            #
             if best_alignment is None:
                 return None
 
