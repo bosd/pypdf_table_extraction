@@ -408,11 +408,10 @@ class TextNetworks(TextAlignments):
             self._compute_alignment_counts()
 
     def most_connected_textline(self):
-        """Retrieve the textline that is most connected."""
-        # Find the textline with the highest alignment score, with a tie break
-        # to prefer textlines further down in the table.  Starting the search
-        # from the table's bottom allows the algo to collect data on more cells
-        # before going to the header, typically harder to parse.
+        """Find the textline with the maximum alignment score."""
+        if not self._textline_to_alignments:
+            return None
+
         return max(
             self._textline_to_alignments.keys(),
             key=lambda textline: (
@@ -424,30 +423,16 @@ class TextNetworks(TextAlignments):
         )
 
     def compute_plausible_gaps(self):
-        """Evaluate plausible gaps between cells.
-
-        Both horizontally and vertically
-        based on the textlines aligned with the most connected textline.
-
-        Returns
-        -------
-        gaps_hv : tuple
-            (horizontal_gap, horizontal_gap) in pdf coordinate space.
-
-        """
-        # Determine the textline that has the most combined
-        # alignments across horizontal and vertical axis.
-        # It will serve as a reference axis along which to collect the average
-        # spacing between rows/cols.
+        """Evaluate plausible gaps between cells."""
         most_aligned_tl = self.most_connected_textline()
         if most_aligned_tl is None:
             return None
 
-        # Retrieve the list of textlines it's aligned with, across both
-        # axis
+        # Retrieve the list of textlines it's aligned with, across both axes
         best_alignment = self._textline_to_alignments[most_aligned_tl]
         __, ref_h_textlines = best_alignment.max_h()
         __, ref_v_textlines = best_alignment.max_v()
+
         if len(ref_v_textlines) <= 1 or len(ref_h_textlines) <= 1:
             return None
 
@@ -458,14 +443,18 @@ class TextNetworks(TextAlignments):
             ref_v_textlines, key=lambda textline: textline.y0, reverse=True
         )
 
-        h_gaps, v_gaps = [], []
-        for i in range(1, len(v_textlines)):
-            v_gaps.append(v_textlines[i - 1].y0 - v_textlines[i].y0)
-        for i in range(1, len(h_textlines)):
-            h_gaps.append(h_textlines[i - 1].x0 - h_textlines[i].x0)
+        h_gaps = [
+            h_textlines[i - 1].x0 - h_textlines[i].x0
+            for i in range(1, len(h_textlines))
+        ]
+        v_gaps = [
+            v_textlines[i - 1].y0 - v_textlines[i].y0
+            for i in range(1, len(v_textlines))
+        ]
 
         if not h_gaps or not v_gaps:
             return None
+
         percentile = 75
         gaps_hv = (
             2.0 * np.percentile(h_gaps, percentile),
