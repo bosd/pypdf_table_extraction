@@ -407,11 +407,16 @@ class TextNetworks(TextAlignments):
             self._compute_alignment_counts()
 
     def most_connected_textline(self):
-        """Retrieve the textline that is most connected."""
-        # Find the textline with the highest alignment score, with a tie break
-        # to prefer textlines further down in the table.  Starting the search
-        # from the table's bottom allows the algo to collect data on more cells
-        # before going to the header, typically harder to parse.
+        """Find the textline with the maximum alignment score.
+
+        Find the textline with the highest alignment score, with a tie break
+        to prefer textlines further down in the table.  Starting the search
+        from the table's bottom allows the algo to collect data on more cells
+        before going to the header, which is typically harder to parse.
+        """
+        if not self._textline_to_alignments:
+            return None
+
         return max(
             self._textline_to_alignments.keys(),
             key=lambda textline: (
@@ -457,11 +462,20 @@ class TextNetworks(TextAlignments):
             ref_v_textlines, key=lambda textline: textline.y0, reverse=True
         )
 
-        h_gaps, v_gaps = [], []
-        for i in range(1, len(v_textlines)):
-            v_gaps.append(v_textlines[i - 1].y0 - v_textlines[i].y0)
-        for i in range(1, len(h_textlines)):
-            h_gaps.append(h_textlines[i - 1].x0 - h_textlines[i].x0)
+        # h_gaps, v_gaps = [], []
+        # for i in range(1, len(v_textlines)):
+        #     v_gaps.append(v_textlines[i - 1].y0 - v_textlines[i].y0)
+        # for i in range(1, len(h_textlines)):
+        #     h_gaps.append(h_textlines[i - 1].x0 - h_textlines[i].x0)
+
+        h_gaps = [
+            h_textlines[i - 1].x0 - h_textlines[i].x0
+            for i in range(1, len(h_textlines))
+        ]
+        v_gaps = [
+            v_textlines[i - 1].y0 - v_textlines[i].y0
+            for i in range(1, len(v_textlines))
+        ]
 
         if not h_gaps or not v_gaps:
             return None
