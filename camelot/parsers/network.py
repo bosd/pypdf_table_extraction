@@ -404,7 +404,7 @@ class TextNetworks(TextAlignments):
                         ):
                             del text_alignment.textlines[i]
                             removed_singletons = True
-            self._textline_to_alignments = {}
+            # self._textline_to_alignments = {}  # bosd hack
             self._compute_alignment_counts()
 
     def most_connected_textline(self):
