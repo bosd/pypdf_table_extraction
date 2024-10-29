@@ -785,8 +785,8 @@ class Network(TextBaseParser):
             self.parse_details["bbox_searches"] = parse_details_bbox_searches
             self.parse_details["col_searches"] = []
         else:
-            parse_details_network_searches = None
-            parse_details_bbox_searches = None
+            parse_details_network_searches = []  # None bosd change bc error in notebook
+            parse_details_bbox_searches = []  # None
 
         while True:
             # Find a bbox: either pulling from the user's or from the network
