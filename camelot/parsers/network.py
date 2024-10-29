@@ -360,10 +360,11 @@ class TextNetworks(TextAlignments):
         # "number of textlines aligned"
         self._textline_to_alignments = {}
         self._recursion_stack = []
-        self.max_most_connected_calls = 1  # Set a limit for calls
+        self.max_most_connected_calls = 2  # Set a limit for calls
         self.most_connected_call_count = 0  # Counter for calls made
         self.max_most_plausible_gaps_calls = 2  # Set a limit for calls
         self.plausible_gaps_call_count = 0  # Counter for calls made
+        self.most_aligned_tl = {}  # None
 
     def _update_alignment(self, alignment, coord, textline):
         alignment.register_aligned_textline(textline, coord)
@@ -430,6 +431,13 @@ class TextNetworks(TextAlignments):
         # Increment the call counter
         self.most_connected_call_count += 1
 
+        if self.most_connected_call_count >= self.max_most_connected_calls:
+            print("Reached the maximum number of calls to most_connected_textline.\n from most_connected_textline.")
+            return self.most_aligned_tl  # None  # Exit if the limit is reached
+            # none returns AttributeError: 'NoneType' object has no attribute 'x0'
+
+        # here is the problem, because it recalculates the textline to alignments.
+
         # Find the textline with the highest alignment score, with a tie break
         return max(
             self._textline_to_alignments.keys(),
@@ -448,22 +456,21 @@ class TextNetworks(TextAlignments):
 
         # Increment the call counter
         self.plausible_gaps_call_count += 1
-
-
         while True:
             if self.most_connected_call_count >= self.max_most_connected_calls:
-                print("Reached the maximum number of calls to most_connected_textline.")
+                print("Reached the maximum number of calls to most_connected_textline.\n from compute_plausible_gaps")
                 return None  # Exit if the limit is reached
 
             if self.plausible_gaps_call_count >= self.max_most_plausible_gaps_calls:
                 print("Reached the maximum number of calls to cimp plausible.")
                 return None  # Exit if the limit is reached
 
-            most_aligned_tl = self.most_connected_textline()
-            if most_aligned_tl is None:
+            self.most_aligned_tl = self.most_connected_textline()
+            if self.most_aligned_tl is None:
                 return None
 
-            best_alignment = self._textline_to_alignments.get(most_aligned_tl)
+            # the line below could also be problematic  # bosd
+            best_alignment = self._textline_to_alignments.get(self.most_aligned_tl)
             if best_alignment is None:
                 return None
 
