@@ -432,7 +432,8 @@ class TextNetworks(TextAlignments):
         self.most_connected_call_count += 1
 
         if self.most_connected_call_count >= self.max_most_connected_calls:
-            print("Reached the maximum number of calls to most_connected_textline.\n from most_connected_textline.")
+            # print("Reached the maximum number of calls to most_connected_textline.\n from most_connected_textline.")
+            # this is the one
             return self.most_aligned_tl  # None  # Exit if the limit is reached
             # none returns AttributeError: 'NoneType' object has no attribute 'x0'
 
@@ -470,7 +471,8 @@ class TextNetworks(TextAlignments):
                 return None
 
             # the line below could also be problematic  # bosd
-            best_alignment = self._textline_to_alignments.get(self.most_aligned_tl)
+            # best_alignment = self._textline_to_alignments.get(self.most_aligned_tl)
+            best_alignment = self.most_connected_textline()  # bosd hack
             if best_alignment is None:
                 return None
 
